@@ -13,6 +13,7 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    command: sh -c "yarn setup:production && yarn start"
 
   db:
     image: postgres:15-alpine

@@ -21,7 +21,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client for production (PostgreSQL)
+RUN cp prisma/schema.postgresql.prisma prisma/schema.prisma
 RUN npx prisma generate
 
 # Build the application

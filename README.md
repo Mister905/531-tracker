@@ -39,8 +39,9 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 ### Prerequisites
 
 - Node.js 18+ 
-- PostgreSQL database
 - Yarn package manager
+- **Local**: No additional setup (uses SQLite)
+- **Production**: PostgreSQL database (AWS RDS recommended)
 
 ### Installation
 
@@ -55,36 +56,59 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
    yarn install
    ```
 
-3. **Set up environment variables**
+3. **Set up local development (SQLite)**
    ```bash
-   cp .env.example .env
-   ```
-   
-   Update `.env` with your database credentials:
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/531_tracker?schema=public"
-   JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-   JWT_EXPIRES_IN="7d"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-nextauth-secret-change-this-in-production"
+   # Quick setup with SQLite (zero configuration)
+   yarn setup:local
    ```
 
-4. **Set up the database**
+   Or manually:
    ```bash
-   # Generate Prisma client
-   npx prisma generate
+   # Copy environment file
+   cp .env.local .env
    
-   # Run database migrations
-   npx prisma migrate dev
+   # Setup SQLite database
+   yarn db:sqlite
+   yarn db:push
    ```
 
-5. **Start the development server**
+4. **Start the development server**
    ```bash
    yarn dev
    ```
 
-6. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Production Deployment (PostgreSQL)
+
+For production deployment with PostgreSQL on AWS:
+
+1. **Set up AWS RDS PostgreSQL**
+   - Create RDS PostgreSQL instance
+   - Note connection details
+
+2. **Configure production environment**
+   ```bash
+   # Update .env.production with your RDS details
+   cp .env.production .env
+   # Edit .env with your AWS RDS connection string
+   ```
+
+3. **Deploy to production**
+   ```bash
+   # Setup production database
+   yarn setup:production
+   
+   # Build and start
+   yarn build
+   yarn start
+   ```
+
+   Or with Docker:
+   ```bash
+   docker-compose up --build
+   ```
 
 ## Usage
 
