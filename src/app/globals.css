@@ -1,26 +1,233 @@
-@import "tailwindcss";
+/* Import Materialize CSS */
+@import 'materialize-css/dist/css/materialize.min.css';
 
+/* Custom Dark Theme for 5/3/1 Tracker */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-color: #ff6b35;
+  --primary-dark: #e55a2b;
+  --secondary-color: #4ecdc4;
+  --accent-color: #ffd93d;
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --border-color: #444;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Override Materialize default colors */
+body {
+  background-color: var(--background-dark) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Custom dark theme overrides */
+.card {
+  background-color: var(--surface-dark) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.card .card-title {
+  color: var(--primary-color) !important;
+}
+
+.card .card-content {
+  color: var(--text-primary) !important;
+}
+
+/* Navigation */
+.navbar {
+  background-color: var(--surface-dark) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.navbar .brand-logo {
+  color: var(--primary-color) !important;
+}
+
+.navbar .nav-wrapper a {
+  color: var(--text-primary) !important;
+}
+
+/* Buttons */
+.btn {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.btn:hover {
+  background-color: var(--primary-dark) !important;
+}
+
+.btn.secondary {
+  background-color: var(--secondary-color) !important;
+}
+
+.btn.secondary:hover {
+  background-color: #3db5ad !important;
+}
+
+/* Forms */
+.input-field input:focus + label {
+  color: var(--primary-color) !important;
+}
+
+.input-field input:focus {
+  border-bottom: 1px solid var(--primary-color) !important;
+  box-shadow: 0 1px 0 0 var(--primary-color) !important;
+}
+
+.input-field .prefix.active {
+  color: var(--primary-color) !important;
+}
+
+/* Collection items */
+.collection {
+  border: 1px solid var(--border-color) !important;
+}
+
+.collection .collection-item {
+  background-color: var(--surface-dark) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.collection .collection-item:hover {
+  background-color: #3a3a3a !important;
+}
+
+/* Progress bars */
+.progress {
+  background-color: #333 !important;
+}
+
+.progress .determinate {
+  background-color: var(--primary-color) !important;
+}
+
+/* Chips */
+.chip {
+  background-color: var(--secondary-color) !important;
+  color: white !important;
+}
+
+/* Badges */
+.badge {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Modals */
+.modal {
+  background-color: var(--surface-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal .modal-content {
+  color: var(--text-primary) !important;
+}
+
+.modal .modal-footer {
+  background-color: var(--surface-dark) !important;
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* Tables */
+table {
+  background-color: var(--surface-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+table th {
+  background-color: var(--background-dark) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+table td {
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Mobile-first responsive design */
+@media only screen and (max-width: 600px) {
+  .container {
+    width: 95% !important;
+  }
+  
+  .card {
+    margin: 0.5rem 0 !important;
+  }
+  
+  .btn {
+    width: 100% !important;
+    margin: 0.25rem 0 !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 5/3/1 specific styles */
+.workout-set {
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem 0;
 }
+
+.workout-set.amrap {
+  border-color: var(--accent-color);
+  background-color: rgba(255, 217, 61, 0.1);
+}
+
+.cycle-week {
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.lift-card {
+  background: linear-gradient(135deg, var(--surface-dark) 0%, #3a3a3a 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: transform 0.2s ease;
+}
+
+.lift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Progress indicators */
+.progress-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary-color) 0deg, var(--border-color) 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+/* Utility classes */
+.text-primary { color: var(--primary-color) !important; }
+.text-secondary { color: var(--secondary-color) !important; }
+.text-accent { color: var(--accent-color) !important; }
+.text-success { color: var(--success-color) !important; }
+.text-warning { color: var(--warning-color) !important; }
+.text-error { color: var(--error-color) !important; }
+
+.bg-primary { background-color: var(--primary-color) !important; }
+.bg-secondary { background-color: var(--secondary-color) !important; }
+.bg-surface { background-color: var(--surface-dark) !important; }
+
+.border-primary { border-color: var(--primary-color) !important; }
+.border-secondary { border-color: var(--secondary-color) !important; }
