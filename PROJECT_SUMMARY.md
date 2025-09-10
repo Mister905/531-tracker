@@ -21,16 +21,17 @@ The 5/3/1 Tracker is now fully implemented as a comprehensive Progressive Web Ap
 
 ### Technical Implementation
 - **GraphQL API**: Efficient data fetching with Apollo Client
-- **JWT Authentication**: Secure user authentication and authorization
+- **JWT Authentication**: Secure user authentication and authorization with bcryptjs
 - **TypeScript**: Full type safety throughout the application
-- **Prisma ORM**: Type-safe database operations with PostgreSQL
+- **Prisma ORM**: Type-safe database operations with SQLite (local) / PostgreSQL (production)
 - **Materialize CSS**: Familiar CSS framework for consistent UI
 - **Comprehensive Testing**: 17 passing tests for core 5/3/1 calculations
+- **Dual Database Support**: SQLite for local development, PostgreSQL for production
 
 ## 🏗️ Architecture
 
 ### Frontend
-- **Next.js 14** with App Router
+- **Next.js 15** with App Router
 - **React 18** with TypeScript
 - **Apollo Client** for GraphQL
 - **Materialize CSS** for styling
@@ -39,8 +40,8 @@ The 5/3/1 Tracker is now fully implemented as a comprehensive Progressive Web Ap
 ### Backend
 - **Next.js API Routes** with Apollo Server
 - **GraphQL** schema and resolvers
-- **Prisma ORM** with PostgreSQL
-- **JWT** authentication
+- **Prisma ORM** with SQLite (local) / PostgreSQL (production)
+- **JWT** authentication with bcryptjs
 - **5/3/1 calculation engine**
 
 ### Database Schema
@@ -100,21 +101,25 @@ The app strictly follows Jim Wendler's 5/3/1 program:
 # Install dependencies
 yarn install
 
-# Start development server
-yarn dev
+# Development
+yarn dev              # Start development server
+yarn build            # Build for production
+yarn start            # Start production server
 
-# Run tests
-yarn test
+# Database Management
+yarn db:sqlite        # Switch to SQLite for local development
+yarn db:postgres      # Switch to PostgreSQL for production
+yarn db:studio        # Open Prisma Studio
+yarn db:reset         # Reset database
+yarn db:push          # Push schema to database
 
-# Build for production
-yarn build
+# Setup Commands
+yarn setup:local      # Complete local setup with SQLite
+yarn setup:production # Complete production setup with PostgreSQL
 
-# Start production server
-yarn start
-
-# Database management
-npx prisma studio
-npx prisma migrate dev
+# Testing
+yarn test             # Run all tests
+yarn test:coverage    # Run tests with coverage report
 ```
 
 ## 📁 Project Structure

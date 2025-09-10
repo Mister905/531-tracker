@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
+import { gql } from '@apollo/client';
 
 const GET_WORKOUT_HISTORY = gql`
   query GetWorkoutHistory {

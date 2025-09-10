@@ -26,13 +26,14 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React 18, TypeScript
+- **Frontend**: Next.js 15, React 18, TypeScript
 - **Styling**: Materialize CSS 1.0.0
 - **State Management**: Apollo Client with GraphQL
 - **Backend**: Next.js API Routes with Apollo Server
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT tokens
+- **Database**: SQLite (local) / PostgreSQL (production) with Prisma ORM
+- **Authentication**: JWT tokens with bcryptjs
 - **PWA**: Service Worker, Web App Manifest
+- **Testing**: Jest with React Testing Library
 
 ## Getting Started
 
@@ -79,6 +80,35 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Available Yarn Scripts
+
+```bash
+# Development
+yarn dev              # Start development server
+yarn build            # Build for production
+yarn start            # Start production server
+yarn lint             # Run ESLint
+
+# Database Management
+yarn db:generate      # Generate Prisma client
+yarn db:push          # Push schema to database
+yarn db:migrate       # Run database migrations
+yarn db:studio        # Open Prisma Studio
+yarn db:reset         # Reset database
+yarn db:deploy        # Deploy migrations to production
+yarn db:sqlite        # Switch to SQLite for local development
+yarn db:postgres      # Switch to PostgreSQL for production
+
+# Setup Commands
+yarn setup:local      # Complete local setup with SQLite
+yarn setup:production # Complete production setup with PostgreSQL
+
+# Testing
+yarn test             # Run all tests
+yarn test:watch       # Run tests in watch mode
+yarn test:coverage    # Run tests with coverage report
+```
 
 ## Production Deployment (PostgreSQL)
 
@@ -199,19 +229,25 @@ The app is a fully functional Progressive Web App:
 
 ### Running Tests
 ```bash
-yarn test
+yarn test             # Run all tests
+yarn test:watch       # Run tests in watch mode
+yarn test:coverage    # Run tests with coverage report
 ```
 
 ### Database Management
 ```bash
 # View database in Prisma Studio
-npx prisma studio
+yarn db:studio
 
 # Reset database
-npx prisma migrate reset
+yarn db:reset
 
 # Deploy migrations
-npx prisma migrate deploy
+yarn db:deploy
+
+# Switch between databases
+yarn db:sqlite        # Switch to SQLite for local development
+yarn db:postgres      # Switch to PostgreSQL for production
 ```
 
 ### Building for Production

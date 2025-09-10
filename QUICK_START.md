@@ -4,10 +4,25 @@
 
 ### 1. Prerequisites
 - Node.js 18+
-- PostgreSQL database
 - Yarn package manager
+- **Local Development**: No additional setup (uses SQLite)
+- **Production**: PostgreSQL database (AWS RDS recommended)
 
-### 2. Setup
+### 2. Setup (Local Development with SQLite)
+```bash
+# Clone and install
+git clone <your-repo>
+cd 531_tracker
+yarn install
+
+# Quick setup with SQLite (zero configuration)
+yarn setup:local
+
+# Start development server
+yarn dev
+```
+
+### 2. Setup (Production with PostgreSQL)
 ```bash
 # Clone and install
 git clone <your-repo>
@@ -15,12 +30,11 @@ cd 531_tracker
 yarn install
 
 # Configure environment
-cp .env.example .env
-# Edit .env with your database credentials
+cp .env.production .env
+# Edit .env with your PostgreSQL credentials
 
-# Setup database
-npx prisma generate
-npx prisma migrate dev
+# Setup production database
+yarn setup:production
 
 # Start development server
 yarn dev
@@ -46,7 +60,25 @@ yarn dev
 - **Week 4**: 40%, 50%, 60% of Training Max (Deload)
 - **Progression**: +5lb upper body, +10lb lower body per cycle
 
-### 6. Support
+### 6. Available Commands
+```bash
+# Development
+yarn dev              # Start development server
+yarn build            # Build for production
+yarn start            # Start production server
+
+# Database Management
+yarn db:sqlite        # Switch to SQLite for local development
+yarn db:postgres      # Switch to PostgreSQL for production
+yarn db:studio        # Open Prisma Studio
+yarn db:reset         # Reset database
+
+# Testing
+yarn test             # Run all tests
+yarn test:coverage    # Run tests with coverage report
+```
+
+### 7. Support
 - Check the README.md for detailed documentation
 - View PROJECT_SUMMARY.md for complete feature list
 - Run `yarn test` to verify everything is working

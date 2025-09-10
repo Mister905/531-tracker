@@ -23,6 +23,9 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.4",
+    "@apollo/server": "^5.0.0",
+    "@as-integrations/next": "^4.0.0",
+    "@graphql-tools/schema": "^10.0.25",
     "@nestjs/apollo": "^13.1.0",
     "@nestjs/common": "^11.1.6",
     "@nestjs/core": "^11.1.6",
@@ -36,6 +39,7 @@
     "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
     "materialize-css": "^1.0.0",
     "next": "15.5.2",

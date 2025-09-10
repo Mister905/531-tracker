@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
+import { gql } from '@apollo/client';
 import AuthModal from './AuthModal';
 import WorkoutTracker from './WorkoutTracker';
 import Analytics from './Analytics';
@@ -175,6 +176,21 @@ export default function App() {
           5/3/1 Tracker
         </h1>
         <p className="text-secondary">Please log in to continue</p>
+        <button 
+          className="btn btn-large"
+          onClick={() => setShowAuth(true)}
+          style={{ marginTop: '20px' }}
+        >
+          <i className="material-icons left">login</i>
+          Login / Register
+        </button>
+        
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={showAuth}
+          onClose={() => setShowAuth(false)}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
     );
   }

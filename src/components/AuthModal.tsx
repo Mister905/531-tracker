@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 
 const LOGIN = gql`
@@ -100,8 +100,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   if (!isOpen) return null;
 
   return (
-    <div className="modal" style={{ display: 'block' }}>
-      <div className="modal-content">
+    <div 
+      className="modal" 
+      style={{ 
+        display: 'block',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        zIndex: 1000
+      }}
+    >
+      <div 
+        className="modal-content"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: '8px',
+          maxWidth: '400px',
+          width: '90%',
+          maxHeight: '80vh',
+          overflow: 'auto'
+        }}
+      >
         <h4 className="text-primary">
           {isLogin ? 'Login' : 'Register'}
         </h4>
@@ -170,12 +197,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             </button>
           </div>
         </div>
-      </div>
-      
-      <div className="modal-footer">
-        <button className="btn-flat" onClick={onClose}>
-          Cancel
-        </button>
+        
+        <div className="row">
+          <div className="col s12 center-align">
+            <button className="btn-flat" onClick={onClose}>
+              Cancel
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
