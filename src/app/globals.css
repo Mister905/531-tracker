@@ -3,15 +3,17 @@
 
 /* Custom Dark Theme for 5/3/1 Tracker */
 :root {
-  --primary-color: #ff6b35;
-  --primary-dark: #e55a2b;
-  --secondary-color: #4ecdc4;
-  --accent-color: #ffd93d;
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
-  --border-color: #444;
+  --primary-color: #4CAF50;
+  --primary-dark: #45a049;
+  --secondary-color: #2196F3;
+  --accent-color: #FFC107;
+  --background-dark: #121212;
+  --surface-dark: #1a1a1a;
+  --surface-light: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #999999;
+  --border-color: #333333;
   --success-color: #4caf50;
   --warning-color: #ff9800;
   --error-color: #f44336;
@@ -217,6 +219,85 @@ table td {
   font-weight: bold;
 }
 
+/* New component styles */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-panel {
+  background-color: var(--surface-light) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Plate calculation styles */
+.plate-tag {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin: 1px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+/* Set type indicators */
+.set-type-warmup {
+  color: var(--accent-color) !important;
+  font-weight: bold;
+}
+
+.set-type-main {
+  color: var(--primary-color) !important;
+  font-weight: bold;
+}
+
+.set-type-bbb {
+  color: var(--secondary-color) !important;
+  font-weight: bold;
+}
+
+/* Mobile-first improvements */
+@media only screen and (max-width: 600px) {
+  .card {
+    margin: 0.25rem 0 !important;
+    border-radius: 8px !important;
+  }
+  
+  .btn {
+    width: 100% !important;
+    margin: 0.25rem 0 !important;
+    border-radius: 8px !important;
+  }
+  
+  .table-responsive {
+    font-size: 0.8rem;
+  }
+  
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.3rem !important;
+  }
+}
+
+/* Touch-friendly improvements */
+.btn {
+  min-height: 44px !important;
+  padding: 0 1rem !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.input-field input {
+  min-height: 44px !important;
+  padding: 0.5rem !important;
+  border-radius: 4px !important;
+}
+
 /* Utility classes */
 .text-primary { color: var(--primary-color) !important; }
 .text-secondary { color: var(--secondary-color) !important; }
@@ -224,10 +305,12 @@ table td {
 .text-success { color: var(--success-color) !important; }
 .text-warning { color: var(--warning-color) !important; }
 .text-error { color: var(--error-color) !important; }
+.text-muted { color: var(--text-muted) !important; }
 
 .bg-primary { background-color: var(--primary-color) !important; }
 .bg-secondary { background-color: var(--secondary-color) !important; }
 .bg-surface { background-color: var(--surface-dark) !important; }
+.bg-surface-light { background-color: var(--surface-light) !important; }
 
 .border-primary { border-color: var(--primary-color) !important; }
 .border-secondary { border-color: var(--secondary-color) !important; }

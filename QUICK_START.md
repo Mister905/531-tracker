@@ -8,6 +8,12 @@
 - **Local Development**: No additional setup (uses SQLite)
 - **Production**: PostgreSQL database (AWS RDS recommended)
 
+### 2. New User Flow
+1. **Register/Login** → **Mandatory Setup Form** → **Strength Summary** → **Training Cycles**
+2. **Setup Form**: Choose weight unit, enter rep maxes, select available plates
+3. **Automatic Calculations**: Real 1RM, Training Max, and complete 4-week cycles
+4. **Plate Calculations**: Exact plate requirements for all sets
+
 ### 2. Setup (Local Development with SQLite)
 ```bash
 # Clone and install

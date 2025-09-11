@@ -5,23 +5,33 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 ## Features
 
 ### Core 5/3/1 Functionality
-- ✅ **Automatic 5/3/1 Calculations**: Correctly implements Wendler's percentage-based system
+- ✅ **Fixed Core Lifts**: Only 4 lifts - Overhead Press, Bench Press, Squat, and Deadlift
+- ✅ **Mandatory Setup Form**: Weight unit selection, rep max inputs, and available plates
+- ✅ **Real 1RM Calculation**: Uses Epley formula to calculate 1RM from rep maxes
 - ✅ **Training Max Management**: Automatically calculates 90% of 1RM for all lifts
-- ✅ **4-Week Cycle Tracking**: Complete cycle management with proper deload weeks
-- ✅ **Weight Progression**: Automatic +5lb (upper body) and +10lb (lower body) increments
+- ✅ **Complete Training Cycles**: 4-week cycles with warm-ups, main sets, and BBB sets
+- ✅ **Plate Calculations**: Shows exact plate requirements for each set
 - ✅ **AMRAP Set Support**: Last set of each week marked as "As Many Reps As Possible"
+
+### Training Program Features
+- ✅ **Warm-up Sets**: 3 sets at 40-60% Training Max, increasing gradually
+- ✅ **Main Working Sets**: Correct 5/3/1 percentages per week
+- ✅ **Boring But Big (BBB)**: 5×10 @ 30% Training Max for all lifts
+- ✅ **Plate Optimization**: Respects user's available plates for all calculations
+- ✅ **All Lifts Simultaneously**: Shows cycles for all 4 lifts on the same view
 
 ### User Experience
 - ✅ **Mobile-First Design**: Optimized for mobile devices with touch-friendly interface
-- ✅ **Dark Theme**: Fitness-focused dark theme with orange/teal accent colors
-- ✅ **PWA Support**: Installable app with offline functionality
-- ✅ **Real-time Updates**: Live workout tracking and progress monitoring
+- ✅ **Dark Theme**: Professional dark theme with green accent colors
+- ✅ **Mandatory Setup**: First-time users must complete setup form
+- ✅ **Clean Tabular Layout**: All lifts and cycles visible simultaneously
+- ✅ **Touch-Friendly**: Large buttons and touch-optimized interface
 
 ### Technical Features
 - ✅ **GraphQL API**: Efficient data fetching with Apollo Client
 - ✅ **JWT Authentication**: Secure user authentication and authorization
 - ✅ **TypeScript**: Full type safety throughout the application
-- ✅ **Prisma ORM**: Type-safe database operations with PostgreSQL
+- ✅ **Prisma ORM**: Type-safe database operations with SQLite/PostgreSQL
 - ✅ **Materialize CSS**: Familiar CSS framework for consistent UI
 
 ## Tech Stack

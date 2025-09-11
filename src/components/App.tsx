@@ -1,174 +1,137 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@apollo/client/react';
+import { useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import AuthModal from './AuthModal';
-import WorkoutTracker from './WorkoutTracker';
-import Analytics from './Analytics';
+import InitialSetupForm from './InitialSetupForm';
+import SummaryTable from './SummaryTable';
+import CycleDisplay from './CycleDisplay';
 
-// GraphQL queries and mutations
-const GET_LIFTS = gql`
-  query GetLifts {
-    lifts {
+const GET_USER_PROFILE = gql`
+  query GetUserProfile {
+    user {
       id
-      name
-      oneRepMax
-      trainingMax
+      email
+      username
+      weightUnit
+      availablePlates
+      squatOneRepMax
+      squatTrainingMax
+      benchOneRepMax
+      benchTrainingMax
+      deadliftOneRepMax
+      deadliftTrainingMax
+      ohpOneRepMax
+      ohpTrainingMax
     }
   }
 `;
 
-const GET_CYCLES = gql`
-  query GetCycles {
-    cycles {
-      id
-      number
-      startDate
-      endDate
-    }
-  }
-`;
-
-const CREATE_LIFT = gql`
-  mutation CreateLift($input: CreateLiftInput!) {
-    createLift(input: $input) {
-      id
-      name
-      oneRepMax
-      trainingMax
-    }
-  }
-`;
-
-const GET_CYCLE_DATA = gql`
-  query GetCycleData($liftId: ID!) {
-    cycleData(liftId: $liftId) {
-      cycle {
-        id
-        number
-        startDate
-        endDate
-      }
-      weeks {
-        week
-        sets {
-          setNumber
-          reps
-          weight
-          percentage
-          isAmrap
-        }
-      }
-    }
-  }
-`;
-
-interface Lift {
+interface UserProfile {
   id: string;
-  name: string;
-  oneRepMax: number;
-  trainingMax: number;
-}
-
-interface CycleData {
-  cycle: {
-    id: string;
-    number: number;
-    startDate: string;
-    endDate: string;
-  };
-  weeks: Array<{
-    week: number;
-    sets: Array<{
-      setNumber: number;
-      reps: number;
-      weight: number;
-      percentage: number;
-      isAmrap: boolean;
-    }>;
-  }>;
+  email: string;
+  username: string;
+  weightUnit: string;
+  availablePlates: string;
+  squatOneRepMax: number | null;
+  squatTrainingMax: number | null;
+  benchOneRepMax: number | null;
+  benchTrainingMax: number | null;
+  deadliftOneRepMax: number | null;
+  deadliftTrainingMax: number | null;
+  ohpOneRepMax: number | null;
+  ohpTrainingMax: number | null;
 }
 
 export default function App() {
-  const [selectedLift, setSelectedLift] = useState<string>('');
-  const [selectedWeek, setSelectedWeek] = useState<number>(1);
-  const [showAddLift, setShowAddLift] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [showWorkout, setShowWorkout] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [newLift, setNewLift] = useState({ name: '', oneRepMax: 0 });
+  const [showSetup, setShowSetup] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Check for existing auth token
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // In a real app, you'd verify the token and get user data
-      setUser({ id: '1', username: 'User' });
+      setIsAuthenticated(true);
     } else {
       setShowAuth(true);
     }
   }, []);
 
-  // Queries
-  const { data: liftsData, loading: liftsLoading, refetch: refetchLifts } = useQuery(GET_LIFTS, {
+  // Query user profile
+  const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(GET_USER_PROFILE, {
+    skip: !isAuthenticated,
     errorPolicy: 'all',
-    skip: !user
-  });
-
-  const { data: cycleData, loading: cycleLoading } = useQuery(GET_CYCLE_DATA, {
-    variables: { liftId: selectedLift },
-    skip: !selectedLift || !user,
-    errorPolicy: 'all'
-  });
-
-  // Mutations
-  const [createLift] = useMutation(CREATE_LIFT, {
-    onCompleted: () => {
-      refetchLifts();
-      setShowAddLift(false);
-      setNewLift({ name: '', oneRepMax: 0 });
-    }
-  });
-
-  const handleAddLift = async () => {
-    if (newLift.name && newLift.oneRepMax > 0) {
-      try {
-        await createLift({
-          variables: {
-            input: {
-              name: newLift.name,
-              oneRepMax: newLift.oneRepMax
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error creating lift:', error);
+    onCompleted: (data) => {
+      if (data?.user) {
+        setUser(data.user);
+        // Check if user has completed setup
+        const hasSetup = data.user.squatOneRepMax && 
+                        data.user.benchOneRepMax && 
+                        data.user.deadliftOneRepMax && 
+                        data.user.ohpOneRepMax;
+        setShowSetup(!hasSetup);
       }
+    },
+    onError: () => {
+      // If query fails, user might not be authenticated
+      setIsAuthenticated(false);
+      setShowAuth(true);
     }
-  };
+  });
 
   const handleAuthSuccess = (token: string, userData: any) => {
+    localStorage.setItem('token', token);
     setUser(userData);
+    setIsAuthenticated(true);
     setShowAuth(false);
+    // Check if user needs setup
+    const hasSetup = userData.squatOneRepMax && 
+                    userData.benchOneRepMax && 
+                    userData.deadliftOneRepMax && 
+                    userData.ohpOneRepMax;
+    setShowSetup(!hasSetup);
   };
 
-  const handleStartWorkout = () => {
-    setShowWorkout(true);
+  const handleSetupComplete = () => {
+    setShowSetup(false);
+    refetchUser(); // Refresh user data
   };
 
-  const handleWorkoutComplete = () => {
-    setShowWorkout(false);
-    // Refresh data
-    refetchLifts();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsAuthenticated(false);
+    setShowAuth(true);
+    setShowSetup(false);
   };
 
-  const lifts: Lift[] = liftsData?.lifts || [];
-  const cycle: CycleData | null = cycleData?.cycleData || null;
-  const selectedWeekData = cycle?.weeks.find(w => w.week === selectedWeek);
+  // Show loading state
+  if (isAuthenticated && userLoading) {
+    return (
+      <div className="container center-align" style={{ marginTop: '100px' }}>
+        <div className="preloader-wrapper big active">
+          <div className="spinner-layer spinner-red-only">
+            <div className="circle-clipper left">
+              <div className="circle"></div>
+            </div>
+            <div className="gap-patch">
+              <div className="circle"></div>
+            </div>
+            <div className="circle-clipper right">
+              <div className="circle"></div>
+            </div>
+          </div>
+        </div>
+        <p style={{ color: '#ffffff', marginTop: '20px' }}>Loading...</p>
+      </div>
+    );
+  }
 
-  if (!user) {
+  // Show auth modal
+  if (!isAuthenticated || showAuth) {
     return (
       <div className="container center-align" style={{ marginTop: '50px' }}>
         <h1 className="text-primary">
@@ -185,7 +148,6 @@ export default function App() {
           Login / Register
         </button>
         
-        {/* Auth Modal */}
         <AuthModal
           isOpen={showAuth}
           onClose={() => setShowAuth(false)}
@@ -195,265 +157,97 @@ export default function App() {
     );
   }
 
+  // Show setup form
+  if (showSetup) {
+    return (
+      <div style={{ 
+        minHeight: '100vh',
+        backgroundColor: '#121212',
+        padding: '20px 0'
+      }}>
+        <InitialSetupForm onComplete={handleSetupComplete} />
+      </div>
+    );
+  }
+
+  // Show main app
+  if (!user) {
+    return (
+      <div className="container center-align" style={{ marginTop: '50px' }}>
+        <p style={{ color: '#ffffff' }}>Loading user data...</p>
+      </div>
+    );
+  }
+
+  const cycleUserData = {
+    squatOneRepMax: user.squatOneRepMax || 0,
+    benchOneRepMax: user.benchOneRepMax || 0,
+    deadliftOneRepMax: user.deadliftOneRepMax || 0,
+    ohpOneRepMax: user.ohpOneRepMax || 0,
+    availablePlates: JSON.parse(user.availablePlates || '[]'),
+    weightUnit: user.weightUnit as 'pounds' | 'kilograms'
+  };
+
   return (
-    <div className="container">
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: '#121212',
+      padding: '20px 0'
+    }}>
       {/* Header */}
-      <div className="row">
-        <div className="col s12">
-          <h1 className="center-align text-primary">
-            <i className="material-icons left">fitness_center</i>
-            5/3/1 Tracker
-          </h1>
-          <p className="center-align text-secondary">
-            Welcome back, {user.username}!
-          </p>
-        </div>
-      </div>
-
-      {/* Lift Selection */}
-      <div className="row">
-        <div className="col s12">
-          <div className="card">
-            <div className="card-content">
-              <h5 className="text-primary">Select Your Lift</h5>
-              {liftsLoading ? (
-                <div className="center-align">
-                  <div className="preloader-wrapper small active">
-                    <div className="spinner-layer spinner-red-only">
-                      <div className="circle-clipper left">
-                        <div className="circle"></div>
-                      </div>
-                      <div className="gap-patch">
-                        <div className="circle"></div>
-                      </div>
-                      <div className="circle-clipper right">
-                        <div className="circle"></div>
-                      </div>
-                    </div>
+      <div className="container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div className="row">
+          <div className="col s12">
+            <div className="card" style={{ 
+              backgroundColor: '#1a1a1a',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}>
+              <div className="card-content" style={{ padding: '1.5rem' }}>
+                <div className="row valign-wrapper">
+                  <div className="col s10">
+                    <h1 style={{ 
+                      color: '#4CAF50',
+                      margin: 0,
+                      fontSize: '2rem',
+                      fontWeight: 'bold'
+                    }}>
+                      <i className="material-icons left" style={{ fontSize: '2rem' }}>fitness_center</i>
+                      5/3/1 Tracker
+                    </h1>
+                    <p style={{ 
+                      color: '#cccccc',
+                      margin: '0.5rem 0 0 0',
+                      fontSize: '1.1rem'
+                    }}>
+                      Welcome back, {user.username}!
+                    </p>
                   </div>
-                </div>
-              ) : (
-                <div className="row">
-                  {lifts.map((lift) => (
-                    <div key={lift.id} className="col s6 m3">
-                      <div 
-                        className={`card lift-card ${selectedLift === lift.id ? 'border-primary' : ''}`}
-                        onClick={() => setSelectedLift(lift.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className="card-content center-align">
-                          <h6 className="text-primary">{lift.name}</h6>
-                          <p className="text-secondary">
-                            1RM: {lift.oneRepMax}lbs<br />
-                            TM: {lift.trainingMax}lbs
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  <div className="col s6 m3">
-                    <div 
-                      className="card lift-card"
-                      onClick={() => setShowAddLift(true)}
-                      style={{ cursor: 'pointer', border: '2px dashed var(--border-color)' }}
+                  <div className="col s2 right-align">
+                    <button
+                      className="btn-flat"
+                      onClick={handleLogout}
+                      style={{ 
+                        color: '#ff6b6b',
+                        fontSize: '0.9rem'
+                      }}
                     >
-                      <div className="card-content center-align">
-                        <i className="material-icons text-secondary" style={{ fontSize: '2rem' }}>add</i>
-                        <p className="text-secondary">Add Lift</p>
-                      </div>
-                    </div>
+                      <i className="material-icons left">logout</i>
+                      Logout
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Summary Table */}
+        <SummaryTable userData={user} />
+
+        {/* Cycle Display */}
+        <CycleDisplay userData={cycleUserData} />
       </div>
-
-      {/* Cycle Data Display */}
-      {selectedLift && cycle && !showWorkout && (
-        <div className="row">
-          <div className="col s12">
-            <div className="card">
-              <div className="card-content">
-                <h5 className="text-primary">
-                  Cycle {cycle.cycle.number} - {lifts.find(l => l.id === selectedLift)?.name}
-                </h5>
-                <p className="text-secondary">
-                  {new Date(cycle.cycle.startDate).toLocaleDateString()} - {new Date(cycle.cycle.endDate).toLocaleDateString()}
-                </p>
-                
-                {/* Week Selection */}
-                <div className="row">
-                  <div className="col s12">
-                    <h6 className="text-secondary">Select Week:</h6>
-                    <div className="row">
-                      {cycle.weeks.map((week) => (
-                        <div key={week.week} className="col s3">
-                          <button
-                            className={`btn ${selectedWeek === week.week ? '' : 'secondary'}`}
-                            onClick={() => setSelectedWeek(week.week)}
-                            style={{ width: '100%' }}
-                          >
-                            Week {week.week}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Selected Week Data */}
-                {selectedWeekData && (
-                  <div className="row">
-                    <div className="col s12">
-                      <div className="cycle-week">
-                        <h6 className="text-accent center-align">Week {selectedWeekData.week}</h6>
-                        {selectedWeekData.sets.map((set) => (
-                          <div 
-                            key={set.setNumber} 
-                            className={`workout-set ${set.isAmrap ? 'amrap' : ''}`}
-                          >
-                            <div className="row">
-                              <div className="col s4">
-                                <strong>Set {set.setNumber}</strong>
-                              </div>
-                              <div className="col s4 center-align">
-                                {set.weight}lbs
-                              </div>
-                              <div className="col s4 right-align">
-                                {set.reps} reps
-                                {set.isAmrap && <span className="chip">AMRAP</span>}
-                              </div>
-                            </div>
-                            <div className="row">
-                              <div className="col s12">
-                                <small className="text-secondary">
-                                  {set.percentage}% of Training Max
-                                </small>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <div className="row">
-                          <div className="col s12 center-align">
-                            <button 
-                              className="btn btn-large"
-                              onClick={handleStartWorkout}
-                            >
-                              Start Workout
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Workout Tracker */}
-      {showWorkout && selectedWeekData && (
-        <div className="row">
-          <div className="col s12">
-            <WorkoutTracker
-              liftId={selectedLift}
-              cycleId={cycle?.cycle.id || ''}
-              weekData={selectedWeekData}
-              onWorkoutComplete={handleWorkoutComplete}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Add Lift Modal */}
-      {showAddLift && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <h4 className="text-primary">Add New Lift</h4>
-            <div className="row">
-              <div className="input-field col s12">
-                <input
-                  id="liftName"
-                  type="text"
-                  value={newLift.name}
-                  onChange={(e) => setNewLift({ ...newLift, name: e.target.value })}
-                />
-                <label htmlFor="liftName">Lift Name</label>
-              </div>
-              <div className="input-field col s12">
-                <input
-                  id="oneRepMax"
-                  type="number"
-                  value={newLift.oneRepMax || ''}
-                  onChange={(e) => setNewLift({ ...newLift, oneRepMax: parseFloat(e.target.value) || 0 })}
-                />
-                <label htmlFor="oneRepMax">One Rep Max (lbs)</label>
-              </div>
-            </div>
-          </div>
-          <div className="modal-footer">
-            <button 
-              className="btn secondary"
-              onClick={() => setShowAddLift(false)}
-            >
-              Cancel
-            </button>
-            <button 
-              className="btn"
-              onClick={handleAddLift}
-            >
-              Add Lift
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Navigation */}
-      <div className="fixed-action-btn">
-        <a className="btn-floating btn-large bg-primary">
-          <i className="material-icons">add</i>
-        </a>
-        <ul>
-          <li>
-            <a className="btn-floating bg-secondary" title="Workouts">
-              <i className="material-icons">fitness_center</i>
-            </a>
-          </li>
-          <li>
-            <a 
-              className="btn-floating bg-secondary" 
-              title="Analytics"
-              onClick={() => setShowAnalytics(true)}
-              style={{ cursor: 'pointer' }}
-            >
-              <i className="material-icons">trending_up</i>
-            </a>
-          </li>
-          <li>
-            <a className="btn-floating bg-secondary" title="Profile">
-              <i className="material-icons">person</i>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuth}
-        onClose={() => setShowAuth(false)}
-        onSuccess={handleAuthSuccess}
-      />
-
-      {/* Analytics Modal */}
-      {showAnalytics && (
-        <Analytics onClose={() => setShowAnalytics(false)} />
-      )}
     </div>
   );
 }

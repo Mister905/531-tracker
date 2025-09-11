@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,8 +6,12 @@ export const metadata: Metadata = {
   description: "Track your 5/3/1 Wendler program with automatic calculations and progress monitoring",
   keywords: "5/3/1, Wendler, strength training, powerlifting, workout tracker",
   authors: [{ name: "5/3/1 Tracker" }],
-  viewport: "width=device-width, initial-scale=1.0",
-  themeColor: "#ff6b35",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1.0,
+  themeColor: "#4CAF50",
 };
 
 export default function RootLayout({
@@ -26,7 +30,13 @@ export default function RootLayout({
         <meta name="theme-color" content="#ff6b35" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body>
+      <body style={{ 
+        backgroundColor: '#121212',
+        color: '#ffffff',
+        margin: 0,
+        padding: 0,
+        fontFamily: 'Roboto, sans-serif'
+      }}>
         {children}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
         <script dangerouslySetInnerHTML={{

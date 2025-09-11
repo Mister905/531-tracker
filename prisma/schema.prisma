@@ -19,27 +19,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  // User preferences
+  weightUnit     String  @default("pounds") // "pounds" or "kilograms"
+  availablePlates String // JSON string of available plates: [100, 45, 35, 25, 10, 5, 2.5]
+  
+  // Lift data (fixed set of 4 lifts)
+  squatOneRepMax    Float?
+  squatTrainingMax  Float?
+  benchOneRepMax    Float?
+  benchTrainingMax  Float?
+  deadliftOneRepMax Float?
+  deadliftTrainingMax Float?
+  ohpOneRepMax      Float?
+  ohpTrainingMax    Float?
+  
   // Relationships
-  lifts     Lift[]
   cycles    Cycle[]
   workouts  Workout[]
   
   @@map("users")
-}
-
-// Lift model (Squat, Bench, Deadlift, OHP)
-model Lift {
-  id          String   @id @default(cuid())
-  name        String   // "Squat", "Bench Press", etc.
-  oneRepMax   Float    // Current 1RM
-  trainingMax Float    // 90% of 1RM for calculations
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  cycles      Cycle[]
-  workouts    Workout[]
-  
-  @@map("lifts")
 }
 
 // Training cycle (4-week period)
@@ -51,7 +49,6 @@ model Cycle {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  lifts     Lift[]
   workouts  Workout[]
   
   @@map("cycles")
@@ -62,11 +59,9 @@ model Workout {
   id        String   @id @default(cuid())
   date      DateTime
   notes     String?
+  liftType  String   // "squat", "bench", "deadlift", "ohp"
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  liftId    String
-  lift      Lift     @relation(fields: [liftId], references: [id], onDelete: Cascade)
   
   cycleId   String
   cycle     Cycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)

@@ -6,12 +6,6 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../../lib/prisma';
-import { 
-  generateCycleData, 
-  calculateTrainingMax, 
-  calculateNewTrainingMax,
-  LiftType 
-} from '../../../lib/531-calculations';
 
 // Context interface
 interface Context {
@@ -59,34 +53,6 @@ const resolvers = {
       return prisma.user.findUnique({
         where: { id },
         include: {
-          lifts: true,
-          cycles: true,
-          workouts: true
-        }
-      });
-    },
-    
-    lifts: async (_: any, __: any, context: Context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      return prisma.lift.findMany({
-        where: { userId: context.user!.id },
-        include: {
-          user: true,
-          cycles: true,
-          workouts: true
-        }
-      });
-    },
-    
-    lift: async (_: any, { id }: { id: string }, context: Context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      return prisma.lift.findFirst({
-        where: { 
-          id,
-          userId: context.user!.id 
-        },
-        include: {
-          user: true,
           cycles: true,
           workouts: true
         }
@@ -99,7 +65,6 @@ const resolvers = {
         where: { userId: context.user!.id },
         include: {
           user: true,
-          lifts: true,
           workouts: true
         },
         orderBy: { number: 'desc' }
@@ -115,62 +80,9 @@ const resolvers = {
         },
         include: {
           user: true,
-          lifts: true,
           workouts: true
         }
       });
-    },
-    
-    cycleData: async (_: any, { liftId }: { liftId: string }, context: Context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      
-      // Get the lift
-      const lift = await prisma.lift.findFirst({
-        where: { 
-          id: liftId,
-          userId: context.user!.id 
-        }
-      });
-
-      if (!lift) {
-        throw new Error('Lift not found or access denied');
-      }
-
-      // Get current cycle or create new one
-      let cycle = await prisma.cycle.findFirst({
-        where: { userId: context.user!.id },
-        orderBy: { number: 'desc' }
-      });
-
-      if (!cycle) {
-        // Create first cycle
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 28); // 4 weeks
-
-        cycle = await prisma.cycle.create({
-          data: {
-            number: 1,
-            startDate,
-            endDate,
-            userId: context.user!.id
-          }
-        });
-      }
-
-      // Generate 5/3/1 cycle data
-      const weeks = generateCycleData(lift.trainingMax);
-
-      return {
-        cycle: {
-          id: cycle.id,
-          number: cycle.number,
-          startDate: cycle.startDate,
-          endDate: cycle.endDate,
-          userId: cycle.userId
-        },
-        weeks
-      };
     },
     
     workouts: async (_: any, __: any, context: Context) => {
@@ -179,7 +91,6 @@ const resolvers = {
         where: { userId: context.user!.id },
         include: {
           user: true,
-          lift: true,
           cycle: true,
           sets: true
         },
@@ -196,7 +107,6 @@ const resolvers = {
         },
         include: {
           user: true,
-          lift: true,
           cycle: true,
           sets: true
         }
@@ -230,7 +140,9 @@ const resolvers = {
         data: {
           email,
           username,
-          password: hashedPassword
+          password: hashedPassword,
+          weightUnit: 'pounds',
+          availablePlates: JSON.stringify([100, 45, 35, 25, 10, 5, 2.5])
         }
       });
 
@@ -248,7 +160,17 @@ const resolvers = {
           email: user.email,
           username: user.username,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
+          weightUnit: user.weightUnit,
+          availablePlates: user.availablePlates,
+          squatOneRepMax: user.squatOneRepMax,
+          squatTrainingMax: user.squatTrainingMax,
+          benchOneRepMax: user.benchOneRepMax,
+          benchTrainingMax: user.benchTrainingMax,
+          deadliftOneRepMax: user.deadliftOneRepMax,
+          deadliftTrainingMax: user.deadliftTrainingMax,
+          ohpOneRepMax: user.ohpOneRepMax,
+          ohpTrainingMax: user.ohpTrainingMax
         }
       };
     },
@@ -285,82 +207,66 @@ const resolvers = {
           email: user.email,
           username: user.username,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
+          weightUnit: user.weightUnit,
+          availablePlates: user.availablePlates,
+          squatOneRepMax: user.squatOneRepMax,
+          squatTrainingMax: user.squatTrainingMax,
+          benchOneRepMax: user.benchOneRepMax,
+          benchTrainingMax: user.benchTrainingMax,
+          deadliftOneRepMax: user.deadliftOneRepMax,
+          deadliftTrainingMax: user.deadliftTrainingMax,
+          ohpOneRepMax: user.ohpOneRepMax,
+          ohpTrainingMax: user.ohpTrainingMax
         }
       };
     },
     
-    createLift: async (_: any, { input }: { input: any }, context: Context) => {
+    updateUserProfile: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new Error('Not authenticated');
       
-      const { name, oneRepMax, trainingMax } = input;
-      
-      return prisma.lift.create({
-        data: {
-          name,
-          oneRepMax,
-          trainingMax: trainingMax || calculateTrainingMax(oneRepMax),
-          userId: context.user!.id
-        },
-        include: {
-          user: true,
-          cycles: true,
-          workouts: true
-        }
-      });
-    },
-    
-    updateLift: async (_: any, { input }: { input: any }, context: Context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      
-      const { id, oneRepMax, trainingMax } = input;
-      
-      // Verify ownership
-      const existingLift = await prisma.lift.findFirst({
-        where: { id, userId: context.user!.id }
-      });
-
-      if (!existingLift) {
-        throw new Error('Lift not found or access denied');
-      }
-
       const updateData: any = {};
-      if (oneRepMax !== undefined) {
-        updateData.oneRepMax = oneRepMax;
-        updateData.trainingMax = trainingMax || calculateTrainingMax(oneRepMax);
-      }
-      if (trainingMax !== undefined) {
-        updateData.trainingMax = trainingMax;
-      }
+      
+      // Update only provided fields
+      if (input.weightUnit !== undefined) updateData.weightUnit = input.weightUnit;
+      if (input.availablePlates !== undefined) updateData.availablePlates = input.availablePlates;
+      if (input.squatOneRepMax !== undefined) updateData.squatOneRepMax = input.squatOneRepMax;
+      if (input.squatTrainingMax !== undefined) updateData.squatTrainingMax = input.squatTrainingMax;
+      if (input.benchOneRepMax !== undefined) updateData.benchOneRepMax = input.benchOneRepMax;
+      if (input.benchTrainingMax !== undefined) updateData.benchTrainingMax = input.benchTrainingMax;
+      if (input.deadliftOneRepMax !== undefined) updateData.deadliftOneRepMax = input.deadliftOneRepMax;
+      if (input.deadliftTrainingMax !== undefined) updateData.deadliftTrainingMax = input.deadliftTrainingMax;
+      if (input.ohpOneRepMax !== undefined) updateData.ohpOneRepMax = input.ohpOneRepMax;
+      if (input.ohpTrainingMax !== undefined) updateData.ohpTrainingMax = input.ohpTrainingMax;
 
-      return prisma.lift.update({
-        where: { id },
+      const user = await prisma.user.update({
+        where: { id: context.user!.id },
         data: updateData,
         include: {
-          user: true,
           cycles: true,
           workouts: true
         }
       });
-    },
-    
-    deleteLift: async (_: any, { id }: { id: string }, context: Context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      
-      // Verify ownership
-      const existingLift = await prisma.lift.findFirst({
-        where: { id, userId: context.user!.id }
-      });
 
-      if (!existingLift) {
-        throw new Error('Lift not found or access denied');
-      }
-
-      await prisma.lift.delete({
-        where: { id }
-      });
-
-      return true;
+      return {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        weightUnit: user.weightUnit,
+        availablePlates: user.availablePlates,
+        squatOneRepMax: user.squatOneRepMax,
+        squatTrainingMax: user.squatTrainingMax,
+        benchOneRepMax: user.benchOneRepMax,
+        benchTrainingMax: user.benchTrainingMax,
+        deadliftOneRepMax: user.deadliftOneRepMax,
+        deadliftTrainingMax: user.deadliftTrainingMax,
+        ohpOneRepMax: user.ohpOneRepMax,
+        ohpTrainingMax: user.ohpTrainingMax,
+        cycles: user.cycles,
+        workouts: user.workouts
+      };
     },
     
     createCycle: async (_: any, { input }: { input: any }, context: Context) => {
@@ -377,7 +283,6 @@ const resolvers = {
         },
         include: {
           user: true,
-          lifts: true,
           workouts: true
         }
       });
@@ -408,7 +313,6 @@ const resolvers = {
         },
         include: {
           user: true,
-          lifts: true,
           workouts: true
         }
       });
@@ -417,19 +321,15 @@ const resolvers = {
     createWorkout: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new Error('Not authenticated');
       
-      const { date, notes, liftId, cycleId, sets } = input;
+      const { date, notes, liftType, cycleId, sets } = input;
       
-      // Verify ownership of lift and cycle
-      const lift = await prisma.lift.findFirst({
-        where: { id: liftId, userId: context.user!.id }
-      });
-
+      // Verify ownership of cycle
       const cycle = await prisma.cycle.findFirst({
         where: { id: cycleId, userId: context.user!.id }
       });
 
-      if (!lift || !cycle) {
-        throw new Error('Lift or cycle not found or access denied');
+      if (!cycle) {
+        throw new Error('Cycle not found or access denied');
       }
 
       // Create workout with sets
@@ -437,8 +337,8 @@ const resolvers = {
         data: {
           date: new Date(date),
           notes,
+          liftType,
           userId: context.user!.id,
-          liftId,
           cycleId,
           sets: {
             create: sets.map((set: any) => ({
@@ -451,7 +351,6 @@ const resolvers = {
         },
         include: {
           user: true,
-          lift: true,
           cycle: true,
           sets: true
         }

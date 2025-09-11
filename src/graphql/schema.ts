@@ -7,18 +7,16 @@ export const typeDefs = gql`
     username: String!
     createdAt: String!
     updatedAt: String!
-    lifts: [Lift!]!
-    cycles: [Cycle!]!
-    workouts: [Workout!]!
-  }
-
-  type Lift {
-    id: ID!
-    name: String!
-    oneRepMax: Float!
-    trainingMax: Float!
-    userId: String!
-    user: User!
+    weightUnit: String!
+    availablePlates: String!
+    squatOneRepMax: Float
+    squatTrainingMax: Float
+    benchOneRepMax: Float
+    benchTrainingMax: Float
+    deadliftOneRepMax: Float
+    deadliftTrainingMax: Float
+    ohpOneRepMax: Float
+    ohpTrainingMax: Float
     cycles: [Cycle!]!
     workouts: [Workout!]!
   }
@@ -30,7 +28,6 @@ export const typeDefs = gql`
     endDate: String!
     userId: String!
     user: User!
-    lifts: [Lift!]!
     workouts: [Workout!]!
   }
 
@@ -38,11 +35,10 @@ export const typeDefs = gql`
     id: ID!
     date: String!
     notes: String
+    liftType: String!
     userId: String!
-    liftId: String!
     cycleId: String!
     user: User!
-    lift: Lift!
     cycle: Cycle!
     sets: [WorkoutSet!]!
   }
@@ -86,16 +82,17 @@ export const typeDefs = gql`
     password: String!
   }
 
-  input CreateLiftInput {
-    name: String!
-    oneRepMax: Float!
-    trainingMax: Float
-  }
-
-  input UpdateLiftInput {
-    id: ID!
-    oneRepMax: Float
-    trainingMax: Float
+  input UpdateUserProfileInput {
+    weightUnit: String
+    availablePlates: String
+    squatOneRepMax: Float
+    squatTrainingMax: Float
+    benchOneRepMax: Float
+    benchTrainingMax: Float
+    deadliftOneRepMax: Float
+    deadliftTrainingMax: Float
+    ohpOneRepMax: Float
+    ohpTrainingMax: Float
   }
 
   input CreateCycleInput {
@@ -107,7 +104,7 @@ export const typeDefs = gql`
   input CreateWorkoutInput {
     date: String!
     notes: String
-    liftId: ID!
+    liftType: String!
     cycleId: ID!
     sets: [CreateWorkoutSetInput!]!
   }
@@ -140,11 +137,8 @@ export const typeDefs = gql`
   type Query {
     users: [User!]!
     user(id: ID!): User
-    lifts: [Lift!]!
-    lift(id: ID!): Lift
     cycles: [Cycle!]!
     cycle(id: ID!): Cycle
-    cycleData(liftId: ID!): CycleData!
     workouts: [Workout!]!
     workout(id: ID!): Workout
   }
@@ -152,9 +146,7 @@ export const typeDefs = gql`
   type Mutation {
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
-    createLift(input: CreateLiftInput!): Lift!
-    updateLift(input: UpdateLiftInput!): Lift!
-    deleteLift(id: ID!): Boolean!
+    updateUserProfile(input: UpdateUserProfileInput!): User!
     createCycle(input: CreateCycleInput!): Cycle!
     startNewCycle: Cycle!
     createWorkout(input: CreateWorkoutInput!): Workout!
