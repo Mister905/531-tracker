@@ -36,7 +36,7 @@ interface FormData {
   deadliftWeight: number;
   ohpReps: number;
   ohpWeight: number;
-  availablePlates: number[];
+  availablePlates: { [plateWeight: number]: number }; // plate weight -> count
 }
 
 const CORE_LIFTS = [
@@ -60,7 +60,10 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
     deadliftWeight: 0,
     ohpReps: 1,
     ohpWeight: 0,
-    availablePlates: DEFAULT_PLATES
+    availablePlates: DEFAULT_PLATES.reduce((acc, plate) => {
+      acc[plate] = 0; // Start with 0 count for each plate
+      return acc;
+    }, {} as { [plateWeight: number]: number })
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,11 +99,16 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
       const deadliftTrainingMax = Math.round(deadliftOneRepMax * 0.9);
       const ohpTrainingMax = Math.round(ohpOneRepMax * 0.9);
 
+      // Convert plate counts to the format expected by the backend
+      const plateData = Object.entries(formData.availablePlates)
+        .filter(([_, count]) => count > 0)
+        .map(([weight, count]) => ({ weight: parseFloat(weight), count }));
+
       await updateUserProfile({
         variables: {
           input: {
             weightUnit: formData.weightUnit,
-            availablePlates: JSON.stringify(formData.availablePlates),
+            availablePlates: JSON.stringify(plateData),
             squatOneRepMax,
             squatTrainingMax,
             benchOneRepMax,
@@ -121,12 +129,13 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
     }
   };
 
-  const togglePlate = (plate: number) => {
+  const updatePlateCount = (plate: number, count: number) => {
     setFormData(prev => ({
       ...prev,
-      availablePlates: prev.availablePlates.includes(plate)
-        ? prev.availablePlates.filter(p => p !== plate)
-        : [...prev.availablePlates, plate].sort((a, b) => b - a)
+      availablePlates: {
+        ...prev.availablePlates,
+        [plate]: Math.max(0, count) // Ensure count is not negative
+      }
     }));
   };
 
@@ -283,26 +292,52 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
             <div className="row" style={{ marginBottom: '2rem' }}>
               <div className="col s12">
                 <h4 style={{ color: '#4CAF50', marginBottom: '1rem' }}>Available Plates</h4>
-                <p style={{ color: '#cccccc', marginBottom: '1rem' }}>
-                  Select the plates you have available at your gym
+                <p style={{ color: '#cccccc', marginBottom: '1.5rem' }}>
+                  Enter how many of each plate you have available at your gym
                 </p>
                 <div className="row">
-                  {[100, 45, 35, 25, 10, 5, 2.5].map((plate) => (
-                    <div key={plate} className="col s6 m4 l3">
-                      <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.availablePlates.includes(plate)}
-                          onChange={() => togglePlate(plate)}
-                        />
-                        <span style={{ 
-                          color: '#ffffff',
-                          marginLeft: '0.5rem',
-                          fontSize: '1rem'
+                  {DEFAULT_PLATES.map((plate) => (
+                    <div key={plate} className="col s6 m4 l3" style={{ marginBottom: '1rem' }}>
+                      <div className="card" style={{ 
+                        backgroundColor: '#2a2a2a',
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ 
+                          color: '#4CAF50',
+                          fontSize: '1.2rem',
+                          fontWeight: 'bold',
+                          marginBottom: '0.5rem'
                         }}>
                           {plate} {formData.weightUnit === 'pounds' ? 'lbs' : 'kg'}
-                        </span>
-                      </label>
+                        </div>
+                        <div className="input-field" style={{ margin: '0' }}>
+                          <input
+                            type="number"
+                            id={`plate-${plate}`}
+                            value={formData.availablePlates[plate] || 0}
+                            onChange={(e) => updatePlateCount(plate, parseInt(e.target.value) || 0)}
+                            min="0"
+                            max="20"
+                            style={{
+                              color: '#ffffff',
+                              borderBottom: '1px solid #4CAF50',
+                              textAlign: 'center',
+                              fontSize: '1.1rem'
+                            }}
+                          />
+                          <label 
+                            htmlFor={`plate-${plate}`}
+                            style={{ 
+                              color: '#cccccc',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            Count
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

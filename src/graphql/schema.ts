@@ -137,6 +137,7 @@ export const typeDefs = gql`
   type Query {
     users: [User!]!
     user(id: ID!): User
+    me: User
     cycles: [Cycle!]!
     cycle(id: ID!): Cycle
     workouts: [Workout!]!

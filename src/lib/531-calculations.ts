@@ -46,11 +46,12 @@ export const calculateTrainingMax = (oneRepMax: number): number => {
  */
 export const calculatePlates = (
   weight: number,
-  availablePlates: number[],
+  availablePlates: { weight: number; count: number }[],
   barWeight: number = 45,
   weightUnit: WeightUnit = 'pounds'
 ): PlateCalculation => {
-  const sortedPlates = [...availablePlates].sort((a, b) => b - a);
+  // Sort plates by weight (heaviest first)
+  const sortedPlates = [...availablePlates].sort((a, b) => b.weight - a.weight);
   const plates: { weight: number; count: number }[] = [];
   let remainingWeight = weight - barWeight;
   
@@ -64,11 +65,14 @@ export const calculatePlates = (
   }
   
   // Calculate plates needed
-  for (const plateWeight of sortedPlates) {
-    const plateCount = Math.floor(remainingWeight / (plateWeight * 2)); // 2 plates per side
-    if (plateCount > 0) {
-      plates.push({ weight: plateWeight, count: plateCount });
-      remainingWeight -= plateCount * plateWeight * 2;
+  for (const plateData of sortedPlates) {
+    const { weight: plateWeight, count: availableCount } = plateData;
+    const platesNeeded = Math.floor(remainingWeight / (plateWeight * 2)); // 2 plates per side
+    const platesToUse = Math.min(platesNeeded, availableCount);
+    
+    if (platesToUse > 0) {
+      plates.push({ weight: plateWeight, count: platesToUse });
+      remainingWeight -= platesToUse * plateWeight * 2;
     }
   }
   
@@ -90,7 +94,7 @@ export const calculatePlates = (
  */
 export const generateWarmupSets = (
   trainingMax: number,
-  availablePlates: number[],
+  availablePlates: { weight: number; count: number }[],
   barWeight: number = 45,
   weightUnit: WeightUnit = 'pounds'
 ): WorkoutSet[] => {
@@ -118,7 +122,7 @@ export const generateWarmupSets = (
  */
 export const generateBBBSets = (
   trainingMax: number,
-  availablePlates: number[],
+  availablePlates: { weight: number; count: number }[],
   barWeight: number = 45,
   weightUnit: WeightUnit = 'pounds'
 ): WorkoutSet[] => {
@@ -165,7 +169,7 @@ export const calculateWorkingWeight = (
 export const generateMainWorkoutSets = (
   trainingMax: number,
   week: number,
-  availablePlates: number[],
+  availablePlates: { weight: number; count: number }[],
   barWeight: number = 45,
   weightUnit: WeightUnit = 'pounds'
 ): WorkoutSet[] => {
@@ -253,7 +257,7 @@ export const calculateNewTrainingMax = (
  */
 export const generateCycleData = (
   trainingMax: number,
-  availablePlates: number[],
+  availablePlates: { weight: number; count: number }[],
   barWeight: number = 45,
   weightUnit: WeightUnit = 'pounds'
 ): WeekData[] => {
@@ -284,7 +288,7 @@ export const generateAllLiftsCycleData = (
     benchOneRepMax: number;
     deadliftOneRepMax: number;
     ohpOneRepMax: number;
-    availablePlates: number[];
+    availablePlates: { weight: number; count: number }[];
     weightUnit: WeightUnit;
   }
 ): Record<LiftType, WeekData[]> => {

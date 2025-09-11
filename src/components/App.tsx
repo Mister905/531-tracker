@@ -10,7 +10,7 @@ import CycleDisplay from './CycleDisplay';
 
 const GET_USER_PROFILE = gql`
   query GetUserProfile {
-    user {
+    me {
       id
       email
       username
@@ -54,7 +54,31 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true);
+      // Basic token validation - check if it's a valid JWT format
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          // Decode payload to check expiration
+          const payload = JSON.parse(atob(parts[1]));
+          const now = Math.floor(Date.now() / 1000);
+          
+          if (payload.exp && payload.exp > now) {
+            setIsAuthenticated(true);
+          } else {
+            console.log('Token expired - clearing auth state');
+            localStorage.removeItem('token');
+            setShowAuth(true);
+          }
+        } else {
+          console.log('Invalid token format - clearing auth state');
+          localStorage.removeItem('token');
+          setShowAuth(true);
+        }
+      } catch (error) {
+        console.log('Token validation error - clearing auth state');
+        localStorage.removeItem('token');
+        setShowAuth(true);
+      }
     } else {
       setShowAuth(true);
     }
@@ -64,23 +88,45 @@ export default function App() {
   const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(GET_USER_PROFILE, {
     skip: !isAuthenticated,
     errorPolicy: 'all',
+    fetchPolicy: 'network-only', // Always fetch from network, not cache
     onCompleted: (data) => {
-      if (data?.user) {
-        setUser(data.user);
+      if (data?.me) {
+        setUser(data.me);
         // Check if user has completed setup
-        const hasSetup = data.user.squatOneRepMax && 
-                        data.user.benchOneRepMax && 
-                        data.user.deadliftOneRepMax && 
-                        data.user.ohpOneRepMax;
+        const hasSetup = data.me.squatOneRepMax && 
+                        data.me.benchOneRepMax && 
+                        data.me.deadliftOneRepMax && 
+                        data.me.ohpOneRepMax;
         setShowSetup(!hasSetup);
+      } else {
+        // If me is null, token is invalid
+        setIsAuthenticated(false);
+        setShowAuth(true);
+        localStorage.removeItem('token');
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.log('GraphQL query error:', error);
       // If query fails, user might not be authenticated
       setIsAuthenticated(false);
       setShowAuth(true);
+      localStorage.removeItem('token');
     }
   });
+
+  // Add timeout mechanism to prevent infinite loading
+  useEffect(() => {
+    if (isAuthenticated && userLoading) {
+      const timeout = setTimeout(() => {
+        console.log('Query timeout - clearing auth state');
+        setIsAuthenticated(false);
+        setShowAuth(true);
+        localStorage.removeItem('token');
+      }, 10000); // 10 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isAuthenticated, userLoading]);
 
   const handleAuthSuccess = (token: string, userData: any) => {
     localStorage.setItem('token', token);
@@ -108,7 +154,7 @@ export default function App() {
     setShowSetup(false);
   };
 
-  // Show loading state
+  // Show loading state only when authenticated and loading
   if (isAuthenticated && userLoading) {
     return (
       <div className="container center-align" style={{ marginTop: '100px' }}>
@@ -125,7 +171,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <p style={{ color: '#ffffff', marginTop: '20px' }}>Loading...</p>
+        <p style={{ color: '#ffffff', marginTop: '20px' }}>Loading user data...</p>
       </div>
     );
   }

@@ -59,6 +59,17 @@ const resolvers = {
       });
     },
     
+    me: async (_: any, __: any, context: Context) => {
+      if (!context.user) throw new Error('Not authenticated');
+      return prisma.user.findUnique({
+        where: { id: context.user.id },
+        include: {
+          cycles: true,
+          workouts: true
+        }
+      });
+    },
+    
     cycles: async (_: any, __: any, context: Context) => {
       if (!context.user) throw new Error('Not authenticated');
       return prisma.cycle.findMany({

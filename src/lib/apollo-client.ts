@@ -1,5 +1,7 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
+import { RetryLink } from '@apollo/client/link/retry';
 
 const httpLink = createHttpLink({
   uri: '/api/graphql',
@@ -8,6 +10,11 @@ const httpLink = createHttpLink({
 const authLink = setContext((_, { headers }) => {
   // Get the authentication token from local storage if it exists
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  // Log token status for debugging
+  if (typeof window !== 'undefined') {
+    console.log('Apollo auth link - token exists:', !!token);
+  }
   
   // Return the headers to the context so httpLink can read them
   return {
@@ -18,9 +25,43 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
+// Error handling link
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path }) => {
+      console.log(`GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`);
+      
+      // If authentication error, clear token and redirect to login
+      if (message.includes('Not authenticated') || message.includes('Unauthorized')) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          window.location.reload(); // Force reload to reset auth state
+        }
+      }
+    });
+  }
+
+  if (networkError) {
+    console.log(`Network error: ${networkError}`);
+  }
+});
+
+// Retry link for failed requests
+const retryLink = new RetryLink({
+  delay: {
+    initial: 300,
+    max: Infinity,
+    jitter: true
+  },
+  attempts: {
+    max: 3,
+    retryIf: (error, _operation) => !!error && !error.message.includes('Not authenticated')
+  }
+});
+
 export const createApolloClient = () => {
   return new ApolloClient({
-    link: authLink.concat(httpLink),
+    link: from([errorLink, retryLink, authLink, httpLink]),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
