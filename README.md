@@ -26,6 +26,8 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 - ✅ **Mandatory Setup**: First-time users must complete setup form
 - ✅ **Clean Tabular Layout**: All lifts and cycles visible simultaneously
 - ✅ **Touch-Friendly**: Large buttons and touch-optimized interface
+- ✅ **Persistent Data**: Rep max values and plate counts persist across login sessions
+- ✅ **Reset Functionality**: Users can reset 1RM values to recalculate training cycles
 
 ### Technical Features
 - ✅ **GraphQL API**: Efficient data fetching with Apollo Client
@@ -35,11 +37,13 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 - ✅ **Materialize CSS**: Familiar CSS framework for consistent UI
 - ✅ **SSR Hydration**: Proper server-side rendering with client-side hydration
 - ✅ **Error Handling**: Comprehensive error handling with retry mechanisms
+- ✅ **Data Persistence**: Robust data parsing and storage for user preferences
+- ✅ **SCSS Modules**: Modular styling with SCSS for maintainable CSS
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 18, TypeScript
-- **Styling**: Materialize CSS 1.0.0
+- **Styling**: Materialize CSS 1.0.0, SCSS Modules
 - **State Management**: Apollo Client with GraphQL
 - **Backend**: Next.js API Routes with Apollo Server
 - **Database**: SQLite (local) / PostgreSQL (production) with Prisma ORM
@@ -156,10 +160,11 @@ For production deployment with PostgreSQL on AWS:
 
 ### Getting Started
 1. **Register/Login**: Create an account or log in with existing credentials
-2. **Add Your Lifts**: Set up your four main lifts (Squat, Bench Press, Deadlift, Overhead Press) with your current 1RM
+2. **Complete Setup**: Choose weight unit (pounds/kilograms), enter rep maxes, and specify available plates
 3. **View Your Cycle**: The app automatically generates your 4-week training cycle with correct percentages
 4. **Track Workouts**: Log your sets, reps, and weights for each workout
 5. **Monitor Progress**: Track your progression over multiple cycles
+6. **Reset When Needed**: Use the reset button to recalculate cycles with new 1RM values
 
 ### 5/3/1 Program Rules (Automatically Implemented)
 
@@ -289,7 +294,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For support, email support@531tracker.com or create an issue in the GitHub repository.
+This is a development project. For issues or questions, please create an issue in the GitHub repository.
 
 ---
 

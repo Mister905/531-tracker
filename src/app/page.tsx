@@ -1,8 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { ApolloProvider } from '@apollo/client/react';
 import { createApolloClient } from '../lib/apollo-client';
-import App from '../components/App';
+
+const App = dynamic(() => import('../components/App'), { ssr: false });
 
 const client = createApolloClient();
 

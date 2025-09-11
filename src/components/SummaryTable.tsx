@@ -18,11 +18,11 @@ interface SummaryTableProps {
 
 const CORE_LIFTS = [
   { 
-    key: 'squat', 
-    name: 'Squat', 
-    icon: 'fitness_center',
-    oneRepMax: 'squatOneRepMax',
-    trainingMax: 'squatTrainingMax'
+    key: 'ohp', 
+    name: 'Overhead Press', 
+    icon: 'sports_gymnastics',
+    oneRepMax: 'ohpOneRepMax',
+    trainingMax: 'ohpTrainingMax'
   },
   { 
     key: 'bench', 
@@ -32,18 +32,18 @@ const CORE_LIFTS = [
     trainingMax: 'benchTrainingMax'
   },
   { 
+    key: 'squat', 
+    name: 'Squat', 
+    icon: 'fitness_center',
+    oneRepMax: 'squatOneRepMax',
+    trainingMax: 'squatTrainingMax'
+  },
+  { 
     key: 'deadlift', 
     name: 'Deadlift', 
     icon: 'fitness_center',
     oneRepMax: 'deadliftOneRepMax',
     trainingMax: 'deadliftTrainingMax'
-  },
-  { 
-    key: 'ohp', 
-    name: 'Overhead Press', 
-    icon: 'sports_gymnastics',
-    oneRepMax: 'ohpOneRepMax',
-    trainingMax: 'ohpTrainingMax'
   }
 ] as const;
 
@@ -84,7 +84,7 @@ export default function SummaryTable({ userData }: SummaryTableProps) {
               borderRadius: '8px',
               overflow: 'hidden'
             }}>
-              <thead style={{ backgroundColor: '#4CAF50' }}>
+              <thead style={{ backgroundColor: '#1a1a1a' }}>
                 <tr>
                   <th style={{ 
                     color: '#ffffff',

@@ -191,7 +191,11 @@ const resolvers = {
 
       // Find user
       const user = await prisma.user.findUnique({
-        where: { email }
+        where: { email },
+        include: {
+          cycles: true,
+          workouts: true
+        }
       });
 
       if (!user) {
@@ -203,6 +207,7 @@ const resolvers = {
       if (!isValid) {
         throw new Error('Invalid email or password');
       }
+
 
       // Generate JWT token
       const token = jwt.sign(

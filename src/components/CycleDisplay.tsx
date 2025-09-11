@@ -14,10 +14,10 @@ interface CycleDisplayProps {
 }
 
 const CORE_LIFTS = [
-  { key: 'squat', name: 'Squat', icon: 'fitness_center' },
-  { key: 'bench', name: 'Bench Press', icon: 'sports_gymnastics' },
+  { key: 'ohp', name: 'Overhead Press', icon: 'sports_gymnastics' },
   { key: 'deadlift', name: 'Deadlift', icon: 'fitness_center' },
-  { key: 'ohp', name: 'Overhead Press', icon: 'sports_gymnastics' }
+  { key: 'bench', name: 'Bench Press', icon: 'sports_gymnastics' },
+  { key: 'squat', name: 'Squat', icon: 'fitness_center' }
 ] as const;
 
 export default function CycleDisplay({ userData }: CycleDisplayProps) {
@@ -65,50 +65,57 @@ export default function CycleDisplay({ userData }: CycleDisplayProps) {
     return (
       <tr key={`${setType}-${set.setNumber}`} style={{ borderBottom: '1px solid #333' }}>
         <td style={{ 
-          padding: '0.5rem',
+          padding: '0.5rem 0.3rem',
           textAlign: 'center',
-          fontSize: '0.9rem',
-          color: '#ffffff'
+          fontSize: '0.8rem',
+          color: '#ffffff',
+          whiteSpace: 'nowrap'
         }}>
           {set.setNumber}
         </td>
         <td style={{ 
-          padding: '0.5rem',
+          padding: '0.5rem 0.3rem',
           textAlign: 'center',
-          fontSize: '0.9rem',
+          fontSize: '0.8rem',
           color: setTypeColors[setType],
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          whiteSpace: 'nowrap'
         }}>
           {setTypeLabels[setType]}
         </td>
         <td style={{ 
-          padding: '0.5rem',
+          padding: '0.5rem 0.3rem',
           textAlign: 'center',
-          fontSize: '0.9rem',
-          color: '#ffffff'
+          fontSize: '0.8rem',
+          color: '#ffffff',
+          whiteSpace: 'nowrap'
         }}>
           {set.reps}{set.isAmrap ? '+' : ''}
         </td>
         <td style={{ 
-          padding: '0.5rem',
+          padding: '0.5rem 0.3rem',
           textAlign: 'center',
-          fontSize: '0.9rem',
+          fontSize: '0.8rem',
           color: '#ffffff',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          whiteSpace: 'nowrap'
         }}>
           {set.weight} {unit}
         </td>
         <td style={{ 
-          padding: '0.5rem',
+          padding: '0.5rem 0.3rem',
           textAlign: 'center',
-          fontSize: '0.9rem',
-          color: '#cccccc'
+          fontSize: '0.8rem',
+          color: '#cccccc',
+          whiteSpace: 'nowrap'
         }}>
           {set.percentage}%
         </td>
         <td style={{ 
-          padding: '0.5rem',
-          textAlign: 'center'
+          padding: '0.5rem 0.3rem',
+          textAlign: 'center',
+          fontSize: '0.8rem',
+          whiteSpace: 'nowrap'
         }}>
           {renderPlates(set.plates.plates)}
         </td>
@@ -118,7 +125,7 @@ export default function CycleDisplay({ userData }: CycleDisplayProps) {
 
   const renderWeek = (week: WeekData, weekNumber: number) => {
     return (
-      <div key={weekNumber} className="col s12 m6 l3" style={{ marginBottom: '2rem' }}>
+      <div key={weekNumber} className="col s12" style={{ marginBottom: '2rem' }}>
         <div className="card" style={{ 
           backgroundColor: '#2a2a2a',
           borderRadius: '8px',
@@ -143,54 +150,94 @@ export default function CycleDisplay({ userData }: CycleDisplayProps) {
               )}
             </h5>
             
-            {CORE_LIFTS.map((lift) => {
-              const liftData = cycleData[lift.key as LiftType][weekNumber - 1];
-              
-              return (
-                <div key={lift.key} style={{ marginBottom: '1.5rem' }}>
-                  <h6 style={{ 
-                    color: '#ffffff',
-                    marginBottom: '0.5rem',
-                    fontSize: '1rem',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <i className="material-icons" style={{ 
-                      fontSize: '1.2rem',
-                      color: '#4CAF50',
-                      marginRight: '0.5rem'
-                    }}>
-                      {lift.icon}
-                    </i>
-                    {lift.name}
-                  </h6>
-                  
-                  <div className="table-responsive" style={{ overflowX: 'auto' }}>
-                    <table className="striped" style={{ 
+            <div className="row" style={{ margin: 0 }}>
+              {CORE_LIFTS.map((lift) => {
+                const liftData = cycleData[lift.key as LiftType][weekNumber - 1];
+                
+                return (
+                  <div key={lift.key} className="col s12 m6 l3" style={{ padding: '0.5rem' }}>
+                    <table style={{ 
+                      width: '100%',
                       backgroundColor: '#1a1a1a',
                       borderRadius: '4px',
-                      fontSize: '0.8rem'
+                      fontSize: '1rem',
+                      borderCollapse: 'collapse',
+                      cellSpacing: 0
                     }}>
                       <thead>
                         <tr style={{ backgroundColor: '#333' }}>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>Set</th>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>Type</th>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>Reps</th>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>Weight</th>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>%</th>
-                          <th style={{ padding: '0.3rem', color: '#ffffff' }}>Plates</th>
+                          <th style={{ 
+                            padding: '0.5rem',
+                            color: '#4CAF50',
+                            textAlign: 'center',
+                            fontSize: '1.1rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {lift.name}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {liftData.warmupSets.map(set => renderSet(set, 'warmup'))}
-                        {liftData.mainSets.map(set => renderSet(set, 'main'))}
-                        {liftData.bbbSets.map(set => renderSet(set, 'bbb'))}
+                        {liftData.warmupSets.map(set => (
+                          <tr key={`warmup-${set.setNumber}`} style={{ borderBottom: '1px solid #333' }}>
+                            <td style={{ 
+                              padding: '0.5rem',
+                              color: '#ffffff',
+                              fontSize: '1rem'
+                            }}>
+                              {set.reps} × {set.weight} {unit}
+                              <span style={{ 
+                                color: '#4CAF50',
+                                fontSize: '0.9rem',
+                                marginLeft: '0.5rem'
+                              }}>
+                                [{set.plates.plates.map(p => p.weight).join(',')}]
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {liftData.mainSets.map(set => (
+                          <tr key={`main-${set.setNumber}`} style={{ borderBottom: '1px solid #333' }}>
+                            <td style={{ 
+                              padding: '0.5rem',
+                              color: '#ffffff',
+                              fontSize: '1rem'
+                            }}>
+                              {set.reps}{set.isAmrap ? '+' : ''} × {set.weight} {unit}
+                              <span style={{ 
+                                color: '#4CAF50',
+                                fontSize: '0.9rem',
+                                marginLeft: '0.5rem'
+                              }}>
+                                [{set.plates.plates.map(p => p.weight).join(',')}]
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {liftData.bbbSets.map(set => (
+                          <tr key={`bbb-${set.setNumber}`} style={{ borderBottom: '1px solid #333' }}>
+                            <td style={{ 
+                              padding: '0.5rem',
+                              color: '#ffffff',
+                              fontSize: '1rem'
+                            }}>
+                              {set.reps} × {set.weight} {unit}
+                              <span style={{ 
+                                color: '#4CAF50',
+                                fontSize: '0.9rem',
+                                marginLeft: '0.5rem'
+                              }}>
+                                [{set.plates.plates.map(p => p.weight).join(',')}]
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -198,7 +245,7 @@ export default function CycleDisplay({ userData }: CycleDisplayProps) {
   };
 
   return (
-    <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+    <div className="container" style={{ width: '100%', margin: '0 auto', padding: '20px' }}>
       <div className="card" style={{ 
         backgroundColor: '#1a1a1a', 
         color: '#ffffff',

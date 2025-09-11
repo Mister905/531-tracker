@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
+import styles from './InitialSetupForm.module.scss';
 
 const UPDATE_USER_PROFILE = gql`
   mutation UpdateUserProfile($input: UpdateUserProfileInput!) {
@@ -24,6 +25,18 @@ const UPDATE_USER_PROFILE = gql`
 
 interface InitialSetupFormProps {
   onComplete: () => void;
+  userData?: {
+    weightUnit: string;
+    squatOneRepMax: number | null;
+    squatTrainingMax: number | null;
+    benchOneRepMax: number | null;
+    benchTrainingMax: number | null;
+    deadliftOneRepMax: number | null;
+    deadliftTrainingMax: number | null;
+    ohpOneRepMax: number | null;
+    ohpTrainingMax: number | null;
+    availablePlates: string;
+  };
 }
 
 interface FormData {
@@ -40,33 +53,140 @@ interface FormData {
 }
 
 const CORE_LIFTS = [
-  { key: 'squat', name: 'Squat', icon: 'fitness_center' },
+  { key: 'ohp', name: 'Overhead Press', icon: 'sports_gymnastics' },
   { key: 'bench', name: 'Bench Press', icon: 'sports_gymnastics' },
-  { key: 'deadlift', name: 'Deadlift', icon: 'fitness_center' },
-  { key: 'ohp', name: 'Overhead Press', icon: 'sports_gymnastics' }
+  { key: 'squat', name: 'Squat', icon: 'fitness_center' },
+  { key: 'deadlift', name: 'Deadlift', icon: 'fitness_center' }
 ] as const;
 
-const DEFAULT_PLATES = [100, 45, 35, 25, 10, 5, 2.5];
+const DEFAULT_PLATES = [100, 55, 45, 35, 25, 10, 5, 2.5];
 
-export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) {
+export default function InitialSetupForm({ onComplete, userData }: InitialSetupFormProps) {
   const [updateUserProfile] = useMutation(UPDATE_USER_PROFILE);
-  const [formData, setFormData] = useState<FormData>({
-    weightUnit: 'pounds',
-    squatReps: 1,
-    squatWeight: 0,
-    benchReps: 1,
-    benchWeight: 0,
-    deadliftReps: 1,
-    deadliftWeight: 0,
-    ohpReps: 1,
-    ohpWeight: 0,
-    availablePlates: DEFAULT_PLATES.reduce((acc, plate) => {
-      acc[plate] = 0; // Start with 0 count for each plate
-      return acc;
-    }, {} as { [plateWeight: number]: number })
+  
+  // Parse available plates from userData
+  const parseAvailablePlates = (platesString: string) => {
+    try {
+      const parsed = JSON.parse(platesString);
+      
+      // If parsed is empty or null, return defaults
+      if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+        return {
+          100: 0,
+          55: 0,
+          45: 4,
+          35: 1,
+          25: 1,
+          10: 1,
+          5: 1,
+          2.5: 1
+        };
+      }
+      
+      // Handle array format: [{"weight":5,"count":1}, ...]
+      if (Array.isArray(parsed)) {
+        const plateMap: { [key: number]: number } = {};
+        parsed.forEach((plate: { weight: number; count: number }) => {
+          plateMap[plate.weight] = plate.count;
+        });
+        
+        return {
+          100: plateMap[100] || 0,
+          55: plateMap[55] || 0,
+          45: plateMap[45] || 4,
+          35: plateMap[35] || 1,
+          25: plateMap[25] || 1,
+          10: plateMap[10] || 1,
+          5: plateMap[5] || 1,
+          2.5: plateMap[2.5] || 1
+        };
+      }
+      
+      // Handle object format: {5: 1, 10: 1, ...}
+      return {
+        100: parsed[100] || parsed['100'] || 0,
+        55: parsed[55] || parsed['55'] || 0,
+        45: parsed[45] || parsed['45'] || 4,
+        35: parsed[35] || parsed['35'] || 1,
+        25: parsed[25] || parsed['25'] || 1,
+        10: parsed[10] || parsed['10'] || 1,
+        5: parsed[5] || parsed['5'] || 1,
+        2.5: parsed[2.5] || parsed['2.5'] || 1
+      };
+    } catch {
+      return {
+        100: 0,
+        55: 0,
+        45: 4,
+        35: 1,
+        25: 1,
+        10: 1,
+        5: 1,
+        2.5: 1
+      };
+    }
+  };
+
+  const [formData, setFormData] = useState<FormData>(() => {
+    const defaultPlates = {
+      100: 0,
+      55: 0,
+      45: 4,
+      35: 1,
+      25: 1,
+      10: 1,
+      5: 1,
+      2.5: 1
+    };
+    
+    return {
+      weightUnit: (userData?.weightUnit as 'pounds' | 'kilograms') || 'pounds',
+      squatReps: 1,
+      squatWeight: userData?.squatOneRepMax || 300,
+      benchReps: 1,
+      benchWeight: userData?.benchOneRepMax || 200,
+      deadliftReps: 1,
+      deadliftWeight: userData?.deadliftOneRepMax || 400,
+      ohpReps: 1,
+      ohpWeight: userData?.ohpOneRepMax || 100,
+      availablePlates: (userData?.availablePlates && userData.availablePlates !== '[]' && userData.availablePlates !== 'null') 
+        ? parseAvailablePlates(userData.availablePlates) 
+        : defaultPlates
+    };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update form data when userData changes
+  useEffect(() => {
+    if (userData) {
+      const defaultPlates = {
+        100: 0,
+        55: 0,
+        45: 4,
+        35: 1,
+        25: 1,
+        10: 1,
+        5: 1,
+        2.5: 1
+      };
+      
+      setFormData({
+        weightUnit: (userData.weightUnit as 'pounds' | 'kilograms') || 'pounds',
+        squatReps: 1,
+        squatWeight: userData.squatOneRepMax || 300,
+        benchReps: 1,
+        benchWeight: userData.benchOneRepMax || 200,
+        deadliftReps: 1,
+        deadliftWeight: userData.deadliftOneRepMax || 400,
+        ohpReps: 1,
+        ohpWeight: userData.ohpOneRepMax || 100,
+        availablePlates: (userData.availablePlates && userData.availablePlates !== '[]' && userData.availablePlates !== 'null') 
+          ? parseAvailablePlates(userData.availablePlates) 
+          : defaultPlates
+      });
+    }
+  }, [userData]);
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
@@ -139,204 +259,80 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
     }));
   };
 
+
+
   return (
-    <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <div className="card" style={{ 
-        backgroundColor: '#1a1a1a', 
-        color: '#ffffff',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-      }}>
-        <div className="card-content" style={{ padding: '2rem' }}>
-          <h2 className="center-align" style={{ 
-            color: '#4CAF50',
-            marginBottom: '2rem',
-            fontSize: '2rem',
-            fontWeight: 'bold'
-          }}>
-            <i className="material-icons left" style={{ fontSize: '2rem' }}>fitness_center</i>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <div className={styles.cardContent}>
+          <h2 className={styles.title}>
+            <i className={`material-icons ${styles.titleIcon}`}>fitness_center</i>
             5/3/1 Setup
           </h2>
           
-          <p className="center-align" style={{ 
-            color: '#cccccc',
-            marginBottom: '2rem',
-            fontSize: '1.1rem'
-          }}>
+          <p className={styles.description}>
             Let's set up your 5/3/1 program with your current strength levels
           </p>
 
           <form onSubmit={handleSubmit}>
             {/* Weight Unit Selection */}
-            <div className="row" style={{ marginBottom: '2rem' }}>
+            <div className={`row ${styles.section}`}>
               <div className="col s12">
-                <h4 style={{ color: '#4CAF50', marginBottom: '1rem' }}>Weight Unit</h4>
-                <div className="row">
-                  <div className="col s6">
-                    <label>
-                      <input
-                        type="radio"
-                        name="weightUnit"
-                        value="pounds"
-                        checked={formData.weightUnit === 'pounds'}
-                        onChange={(e) => handleInputChange('weightUnit', e.target.value)}
-                      />
-                      <span style={{ color: '#ffffff', fontSize: '1.1rem' }}>Pounds (lbs)</span>
-                    </label>
-                  </div>
-                  <div className="col s6">
-                    <label>
-                      <input
-                        type="radio"
-                        name="weightUnit"
-                        value="kilograms"
-                        checked={formData.weightUnit === 'kilograms'}
-                        onChange={(e) => handleInputChange('weightUnit', e.target.value)}
-                      />
-                      <span style={{ color: '#ffffff', fontSize: '1.1rem' }}>Kilograms (kg)</span>
-                    </label>
-                  </div>
+                <h4 className={styles.sectionTitle}>Weight Unit</h4>
+                <div className={styles.radioGroup}>
+                  <label>
+                    <input
+                      type="radio"
+                      name="weightUnit"
+                      value="pounds"
+                      checked={formData.weightUnit === 'pounds'}
+                      onChange={(e) => handleInputChange('weightUnit', e.target.value)}
+                    />
+                    <span className={styles.radioLabel}>Pounds (lbs)</span>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="weightUnit"
+                      value="kilograms"
+                      checked={formData.weightUnit === 'kilograms'}
+                      onChange={(e) => handleInputChange('weightUnit', e.target.value)}
+                    />
+                    <span className={styles.radioLabel}>Kilograms (kg)</span>
+                  </label>
                 </div>
               </div>
             </div>
 
-            {/* Rep Max Inputs */}
-            <div className="row" style={{ marginBottom: '2rem' }}>
-              <div className="col s12">
-                <h4 style={{ color: '#4CAF50', marginBottom: '1rem' }}>Current Rep Maxes</h4>
-                <p style={{ color: '#cccccc', marginBottom: '1.5rem' }}>
-                  Enter your current rep max for each lift (e.g., "5 reps × 225 lbs")
-                </p>
-                
-                {CORE_LIFTS.map((lift) => (
-                  <div key={lift.key} className="row" style={{ marginBottom: '1.5rem' }}>
-                    <div className="col s12">
-                      <div className="card" style={{ 
-                        backgroundColor: '#2a2a2a',
-                        padding: '1rem',
-                        borderRadius: '8px'
-                      }}>
-                        <div className="row valign-wrapper">
-                          <div className="col s2">
-                            <i className="material-icons" style={{ 
-                              fontSize: '2rem',
-                              color: '#4CAF50'
-                            }}>
-                              {lift.icon}
-                            </i>
-                          </div>
-                          <div className="col s10">
-                            <h5 style={{ 
-                              color: '#ffffff',
-                              margin: '0 0 1rem 0',
-                              fontSize: '1.3rem'
-                            }}>
-                              {lift.name}
-                            </h5>
-                            <div className="row">
-                              <div className="col s6">
-                                <div className="input-field">
-                                  <input
-                                    type="number"
-                                    id={`${lift.key}Reps`}
-                                    value={formData[`${lift.key}Reps` as keyof FormData] as number}
-                                    onChange={(e) => handleInputChange(`${lift.key}Reps` as keyof FormData, parseInt(e.target.value) || 1)}
-                                    min="1"
-                                    max="20"
-                                    style={{
-                                      color: '#ffffff',
-                                      borderBottom: '1px solid #4CAF50'
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`${lift.key}Reps`}
-                                    style={{ color: '#cccccc' }}
-                                  >
-                                    Reps
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col s6">
-                                <div className="input-field">
-                                  <input
-                                    type="number"
-                                    id={`${lift.key}Weight`}
-                                    value={formData[`${lift.key}Weight` as keyof FormData] as number}
-                                    onChange={(e) => handleInputChange(`${lift.key}Weight` as keyof FormData, parseFloat(e.target.value) || 0)}
-                                    min="0"
-                                    step="0.5"
-                                    style={{
-                                      color: '#ffffff',
-                                      borderBottom: '1px solid #4CAF50'
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`${lift.key}Weight`}
-                                    style={{ color: '#cccccc' }}
-                                  >
-                                    Weight ({formData.weightUnit === 'pounds' ? 'lbs' : 'kg'})
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Available Plates */}
-            <div className="row" style={{ marginBottom: '2rem' }}>
+            <div className={`row ${styles.section}`}>
               <div className="col s12">
-                <h4 style={{ color: '#4CAF50', marginBottom: '1rem' }}>Available Plates</h4>
-                <p style={{ color: '#cccccc', marginBottom: '1.5rem' }}>
-                  Enter how many of each plate you have available at your gym
+                <h4 className={styles.sectionTitle}>Available Plates</h4>
+                <p className={styles.sectionDescription}>
+                  Enter how many pairs of each weight you have available at your gym
                 </p>
-                <div className="row">
+                <div className={styles.plateGrid}>
                   {DEFAULT_PLATES.map((plate) => (
-                    <div key={plate} className="col s6 m4 l3" style={{ marginBottom: '1rem' }}>
-                      <div className="card" style={{ 
-                        backgroundColor: '#2a2a2a',
-                        padding: '1rem',
-                        borderRadius: '8px',
-                        textAlign: 'center'
-                      }}>
-                        <div style={{ 
-                          color: '#4CAF50',
-                          fontSize: '1.2rem',
-                          fontWeight: 'bold',
-                          marginBottom: '0.5rem'
-                        }}>
-                          {plate} {formData.weightUnit === 'pounds' ? 'lbs' : 'kg'}
-                        </div>
-                        <div className="input-field" style={{ margin: '0' }}>
-                          <input
-                            type="number"
-                            id={`plate-${plate}`}
-                            value={formData.availablePlates[plate] || 0}
-                            onChange={(e) => updatePlateCount(plate, parseInt(e.target.value) || 0)}
-                            min="0"
-                            max="20"
-                            style={{
-                              color: '#ffffff',
-                              borderBottom: '1px solid #4CAF50',
-                              textAlign: 'center',
-                              fontSize: '1.1rem'
-                            }}
-                          />
-                          <label 
-                            htmlFor={`plate-${plate}`}
-                            style={{ 
-                              color: '#cccccc',
-                              fontSize: '0.9rem'
-                            }}
-                          >
-                            Count
-                          </label>
-                        </div>
+                    <div key={plate} className={styles.plateCard}>
+                      <div className={styles.plateWeight}>
+                        {plate} {formData.weightUnit === 'pounds' ? 'lbs' : 'kg'}
+                      </div>
+                      <div className={styles.plateInputField}>
+                        <input
+                          type="number"
+                          id={`plate-${plate}`}
+                          value={formData.availablePlates[plate] ?? 0}
+                          onChange={(e) => updatePlateCount(plate, parseInt(e.target.value) || 0)}
+                          min="0"
+                          max="20"
+                          className={`${styles.plateInput} active`}
+                        />
+                        <label 
+                          htmlFor={`plate-${plate}`}
+                          className={styles.plateInputLabel}
+                        >
+                          Pairs
+                        </label>
                       </div>
                     </div>
                   ))}
@@ -344,16 +340,71 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
               </div>
             </div>
 
+            {/* Rep Max Inputs */}
+            <div className={`row ${styles.section}`}>
+              <div className="col s12">
+                <h4 className={styles.sectionTitle}>Current Rep Maxes</h4>
+                <p className={styles.sectionDescription}>
+                  Enter your current rep max for each lift (e.g., "1 rep × 225 lbs")
+                </p>
+                
+                {CORE_LIFTS.map((lift) => (
+                  <div key={lift.key} className={styles.liftCard}>
+                    <div className={styles.liftHeader}>
+                      <i className={`material-icons ${styles.liftIcon}`}>
+                        {lift.icon}
+                      </i>
+                      <h5 className={styles.liftName}>
+                        {lift.name}
+                      </h5>
+                    </div>
+                    <div className={styles.inputRow}>
+                      <div className={styles.inputField}>
+                        <label 
+                          htmlFor={`${lift.key}Reps`}
+                          className={styles.inputLabel}
+                        >
+                          Reps
+                        </label>
+                        <input
+                          type="number"
+                          id={`${lift.key}Reps`}
+                          value={formData[`${lift.key}Reps` as keyof FormData] as number}
+                          onChange={(e) => handleInputChange(`${lift.key}Reps` as keyof FormData, parseInt(e.target.value) || 1)}
+                          min="1"
+                          max="20"
+                          className={styles.input}
+                        />
+                      </div>
+                      <div className={styles.inputField}>
+                        <label 
+                          htmlFor={`${lift.key}Weight`}
+                          className={styles.inputLabel}
+                        >
+                          Weight ({formData.weightUnit === 'pounds' ? 'lbs' : 'kg'})
+                        </label>
+                        <input
+                          type="number"
+                          id={`${lift.key}Weight`}
+                          value={formData[`${lift.key}Weight` as keyof FormData] as number}
+                          onChange={(e) => handleInputChange(`${lift.key}Weight` as keyof FormData, parseFloat(e.target.value) || 0)}
+                          min="0"
+                          step="0.5"
+                          className={styles.input}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Error Display */}
             {error && (
               <div className="row">
                 <div className="col s12">
-                  <div className="card-panel red darken-2" style={{ 
-                    color: '#ffffff',
-                    textAlign: 'center',
-                    borderRadius: '8px'
-                  }}>
-                    <i className="material-icons left">error</i>
+                  <div className={styles.errorCard}>
+                    <i className={`material-icons ${styles.errorIcon}`}>error</i>
                     {error}
                   </div>
                 </div>
@@ -362,30 +413,20 @@ export default function InitialSetupForm({ onComplete }: InitialSetupFormProps) 
 
             {/* Submit Button */}
             <div className="row">
-              <div className="col s12 center-align">
+              <div className={`col s12 ${styles.submitContainer}`}>
                 <button
                   type="submit"
                   disabled={isSubmitting || formData.squatWeight === 0 || formData.benchWeight === 0 || formData.deadliftWeight === 0 || formData.ohpWeight === 0}
-                  className="btn btn-large"
-                  style={{
-                    backgroundColor: '#4CAF50',
-                    color: '#ffffff',
-                    borderRadius: '8px',
-                    padding: '0 2rem',
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)'
-                  }}
+                  className={`btn btn-large ${styles.submitButton}`}
                 >
                   {isSubmitting ? (
                     <>
-                      <i className="material-icons left">hourglass_empty</i>
+                      <i className={`material-icons ${styles.submitButtonIcon}`}>hourglass_empty</i>
                       Setting Up...
                     </>
                   ) : (
                     <>
-                      <i className="material-icons left">check</i>
+                      <i className={`material-icons ${styles.submitButtonIcon}`}>check</i>
                       Complete Setup
                     </>
                   )}

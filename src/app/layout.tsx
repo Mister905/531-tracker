@@ -42,14 +42,6 @@ export default function RootLayout({
       }}>
         {children}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            document.addEventListener('DOMContentLoaded', function() {
-              var elems = document.querySelectorAll('.modal');
-              var instances = M.Modal.init(elems);
-            });
-          `
-        }} />
       </body>
     </html>
   );

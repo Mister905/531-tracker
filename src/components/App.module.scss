@@ -1,0 +1,237 @@
+// App SCSS Module
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.appContainer {
+  min-height: 100vh;
+  background-color: #121212;
+  padding: 20px 0;
+}
+
+.loadingContainer {
+  margin-top: 100px;
+  text-align: center;
+}
+
+.loadingText {
+  color: #ffffff;
+  margin-top: 20px;
+}
+
+.authContainer {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.authTitle {
+  color: #4CAF50;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.authTitleIcon {
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.authSubtitle {
+  color: #cccccc;
+}
+
+.headerCard {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.headerCardContent {
+  padding: 1.5rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+}
+
+.headerTitle {
+  color: #4CAF50;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.headerTitleIcon {
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.headerSubtitle {
+  color: #cccccc;
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+}
+
+.resetButton {
+  color: #ffa726;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 167, 38, 0.1);
+  }
+}
+
+.logoutButton {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+  }
+}
+
+.resetIcon {
+  margin-right: 0.5rem;
+}
+
+.logoutIcon {
+  margin-right: 0.5rem;
+}
+
+// Preloader styles
+.preloaderWrapper {
+  &.big {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  &.active {
+    display: block;
+  }
+}
+
+.spinnerLayer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid #333;
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinnerRedOnly {
+  border-color: #4CAF50;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.circleClipper {
+  display: inline-block;
+  position: relative;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  border-color: inherit;
+
+  &.left {
+    float: left;
+  }
+
+  &.right {
+    float: right;
+  }
+}
+
+.circle {
+  width: 200%;
+  height: 100%;
+  border-width: 3px;
+  border-style: solid;
+  border-color: inherit;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  animation: rotate 2s linear infinite;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.gapPatch {
+  position: absolute;
+  top: 0;
+  left: 45%;
+  width: 10%;
+  height: 100%;
+  overflow: hidden;
+  border-color: inherit;
+
+  .circle {
+    width: 1000%;
+    left: -450%;
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fill-unfill-rotate {
+  12.5% {
+    transform: rotate(135deg);
+  }
+  25% {
+    transform: rotate(270deg);
+  }
+  37.5% {
+    transform: rotate(405deg);
+  }
+  50% {
+    transform: rotate(540deg);
+  }
+  62.5% {
+    transform: rotate(675deg);
+  }
+  75% {
+    transform: rotate(810deg);
+  }
+  87.5% {
+    transform: rotate(945deg);
+  }
+  100% {
+    transform: rotate(1080deg);
+  }
+}

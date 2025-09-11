@@ -13,6 +13,8 @@
 2. **Setup Form**: Choose weight unit, enter rep maxes, select available plates
 3. **Automatic Calculations**: Real 1RM, Training Max, and complete 4-week cycles
 4. **Plate Calculations**: Exact plate requirements for all sets
+5. **Data Persistence**: All settings and values persist across login sessions
+6. **Reset Option**: Reset 1RM values to recalculate cycles when needed
 
 ### 2. Setup (Local Development with SQLite)
 ```bash
@@ -55,9 +57,11 @@ yarn dev
 
 ### 4. Key Features
 - **Automatic Calculations**: No need to calculate percentages manually
-- **Mobile-First**: Optimized for phone use
+- **Mobile-First**: Optimized for phone use with touch-friendly interface
 - **Offline Support**: Works without internet
 - **Progress Tracking**: See your strength gains over time
+- **Data Persistence**: Settings and values saved across sessions
+- **Reset Functionality**: Recalculate cycles with new strength levels
 
 ### 5. 5/3/1 Program Rules (Automatically Implemented)
 - **Week 1**: 65%, 75%, 85% of Training Max

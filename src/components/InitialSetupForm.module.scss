@@ -1,0 +1,241 @@
+// InitialSetupForm SCSS Module
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.cardContent {
+  padding: 2rem;
+}
+
+.title {
+  color: #4CAF50;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.titleIcon {
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.description {
+  color: #cccccc;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.sectionDescription {
+  color: #cccccc;
+  margin-bottom: 1.5rem;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.radioLabel {
+  color: #ffffff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.liftCard {
+  background-color: #2a2a2a;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.liftHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.liftIcon {
+  font-size: 2rem;
+  color: #4CAF50;
+  margin-right: 1rem;
+}
+
+.liftName {
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+}
+
+.inputRow {
+  display: flex;
+  gap: 1rem;
+}
+
+
+.input {
+  color: #ffffff;
+  border-bottom: 1px solid #4CAF50;
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  outline: none;
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  position: relative;
+  z-index: 1;
+
+  &.active {
+    border-bottom-color: #4CAF50;
+  }
+
+  &:focus {
+    border-bottom-color: #4CAF50;
+  }
+}
+
+.inputLabel {
+  color: #4CAF50;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+}
+
+.inputField {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.plateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.plateCard {
+  background-color: #2a2a2a;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.plateWeight {
+  color: #4CAF50;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.plateInputField {
+  margin: 0;
+}
+
+.plateInput {
+  color: #ffffff;
+  border-bottom: 1px solid #4CAF50;
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  outline: none;
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 1.1rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+
+  &.active {
+    border-bottom-color: #4CAF50;
+  }
+
+  &:focus {
+    border-bottom-color: #4CAF50;
+  }
+}
+
+.plateInputLabel {
+  color: #4CAF50;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+  text-align: center;
+}
+
+.errorCard {
+  background-color: #d32f2f;
+  color: #ffffff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.errorIcon {
+  margin-right: 0.5rem;
+}
+
+.submitButton {
+  background-color: #4CAF50 !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+  padding: 0 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: none;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  width: auto;
+
+  &:hover:not(:disabled) {
+    background-color: #45a049 !important;
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.submitButtonIcon {
+  // Icon spacing handled by flexbox gap
+}
+
+.submitContainer {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

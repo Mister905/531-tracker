@@ -28,6 +28,8 @@ The 5/3/1 Tracker is now fully implemented as a comprehensive Progressive Web Ap
 - **Mandatory Setup**: First-time users must complete setup form
 - **Clean Tabular Layout**: All lifts and cycles visible simultaneously
 - **Touch-Friendly**: Large buttons and touch-optimized interface
+- **Persistent Data**: Rep max values and plate counts persist across login sessions
+- **Reset Functionality**: Users can reset 1RM values to recalculate training cycles
 
 ### Technical Implementation
 - **GraphQL API**: Efficient data fetching with Apollo Client
@@ -35,10 +37,12 @@ The 5/3/1 Tracker is now fully implemented as a comprehensive Progressive Web Ap
 - **TypeScript**: Full type safety throughout the application
 - **Prisma ORM**: Type-safe database operations with SQLite (local) / PostgreSQL (production)
 - **Materialize CSS**: Familiar CSS framework for consistent UI
+- **SCSS Modules**: Modular styling for maintainable CSS
 - **Comprehensive Testing**: 17 passing tests for core 5/3/1 calculations
 - **Dual Database Support**: SQLite for local development, PostgreSQL for production
 - **SSR Hydration**: Proper server-side rendering with client-side hydration
 - **Error Handling**: Comprehensive error handling with retry mechanisms
+- **Data Persistence**: Robust data parsing and storage for user preferences
 - **Plate Count System**: Numeric inputs for specifying exact plate quantities
 
 ## 🏗️ Architecture
@@ -47,7 +51,7 @@ The 5/3/1 Tracker is now fully implemented as a comprehensive Progressive Web Ap
 - **Next.js 15** with App Router
 - **React 18** with TypeScript
 - **Apollo Client** for GraphQL
-- **Materialize CSS** for styling
+- **Materialize CSS** with SCSS Modules for styling
 - **PWA** capabilities with service worker
 
 ### Backend

@@ -7,6 +7,7 @@ import AuthModal from './AuthModal';
 import InitialSetupForm from './InitialSetupForm';
 import SummaryTable from './SummaryTable';
 import CycleDisplay from './CycleDisplay';
+import styles from './App.module.scss';
 
 const GET_USER_PROFILE = gql`
   query GetUserProfile {
@@ -44,297 +45,237 @@ interface UserProfile {
   ohpTrainingMax: number | null;
 }
 
+interface GetUserProfileResponse {
+  me: UserProfile | null;
+}
+
 export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  // Set client-side flag
+  // Set client flag after hydration
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Check for existing auth token
+  // Check localStorage for token on client only
   useEffect(() => {
     if (!isClient) return;
-    
-    console.log('App mounted - checking authentication state');
+
     const token = localStorage.getItem('token');
-    console.log('Token found:', !!token);
-    
-    if (token) {
-      // Basic token validation - check if it's a valid JWT format
-      try {
-        const parts = token.split('.');
-        if (parts.length === 3) {
-          // Decode payload to check expiration
-          const payload = JSON.parse(atob(parts[1]));
-          const now = Math.floor(Date.now() / 1000);
-          
-          console.log('Token payload:', payload);
-          console.log('Token expires at:', new Date(payload.exp * 1000));
-          console.log('Current time:', new Date(now * 1000));
-          
-          if (payload.exp && payload.exp > now) {
-            console.log('Token is valid - setting authenticated');
-            setIsAuthenticated(true);
-          } else {
-            console.log('Token expired - clearing auth state');
-            localStorage.removeItem('token');
-            setShowAuth(true);
-          }
+    if (!token) {
+      setShowAuth(true);
+      return;
+    }
+
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp > now) {
+          setIsAuthenticated(true);
         } else {
-          console.log('Invalid token format - clearing auth state');
           localStorage.removeItem('token');
           setShowAuth(true);
         }
-      } catch (error) {
-        console.log('Token validation error - clearing auth state:', error);
+      } else {
         localStorage.removeItem('token');
         setShowAuth(true);
       }
-    } else {
-      console.log('No token found - showing auth');
+    } catch {
+      localStorage.removeItem('token');
       setShowAuth(true);
     }
-    
-    setInitialLoadComplete(true);
   }, [isClient]);
 
-  // Query user profile
-  const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(GET_USER_PROFILE, {
+  const { data, loading, refetch } = useQuery<GetUserProfileResponse>(GET_USER_PROFILE, {
     skip: !isAuthenticated,
-    errorPolicy: 'all',
-    fetchPolicy: 'network-only', // Always fetch from network, not cache
-    onCompleted: (data) => {
-      console.log('GraphQL query completed:', data);
-      if (data?.me) {
-        console.log('User data received:', data.me);
-        setUser(data.me);
-        // Check if user has completed setup
-        const hasSetup = data.me.squatOneRepMax && 
-                        data.me.benchOneRepMax && 
-                        data.me.deadliftOneRepMax && 
-                        data.me.ohpOneRepMax;
-        console.log('User has setup:', hasSetup);
-        setShowSetup(!hasSetup);
-      } else {
-        console.log('No user data - clearing auth state');
-        // If me is null, token is invalid
-        setIsAuthenticated(false);
-        setShowAuth(true);
-        localStorage.removeItem('token');
-      }
-    },
-    onError: (error) => {
-      console.log('GraphQL query error:', error);
-      // If query fails, user might not be authenticated
-      setIsAuthenticated(false);
-      setShowAuth(true);
-      localStorage.removeItem('token');
-    }
+    fetchPolicy: 'network-only',
   });
 
-  // Add timeout mechanism to prevent infinite loading
+  // Handle query completion
   useEffect(() => {
-    console.log('Timeout effect - isAuthenticated:', isAuthenticated, 'userLoading:', userLoading);
-    if (isAuthenticated && userLoading) {
-      console.log('Setting up timeout for query');
-      const timeout = setTimeout(() => {
-        console.log('Query timeout - clearing auth state');
-        setIsAuthenticated(false);
-        setShowAuth(true);
-        localStorage.removeItem('token');
-      }, 10000); // 10 second timeout
-
-      return () => {
-        console.log('Clearing timeout');
-        clearTimeout(timeout);
-      };
+    if (data?.me) {
+      setUser(data.me);
+      const needsSetup =
+        !data.me.squatOneRepMax &&
+        !data.me.benchOneRepMax &&
+        !data.me.deadliftOneRepMax &&
+        !data.me.ohpOneRepMax;
+      setShowSetup(needsSetup);
+    } else if (data && !data.me) {
+      handleLogout();
     }
-  }, [isAuthenticated, userLoading]);
+  }, [data]);
 
-  const handleAuthSuccess = (token: string, userData: any) => {
-    localStorage.setItem('token', token);
+  const handleAuthSuccess = (token: string, userData: UserProfile) => {
+    if (typeof window !== 'undefined') localStorage.setItem('token', token);
     setUser(userData);
     setIsAuthenticated(true);
     setShowAuth(false);
-    // Check if user needs setup
-    const hasSetup = userData.squatOneRepMax && 
-                    userData.benchOneRepMax && 
-                    userData.deadliftOneRepMax && 
-                    userData.ohpOneRepMax;
-    setShowSetup(!hasSetup);
+    const needsSetup =
+      !userData.squatOneRepMax &&
+      !userData.benchOneRepMax &&
+      !userData.deadliftOneRepMax &&
+      !userData.ohpOneRepMax;
+    setShowSetup(needsSetup);
   };
 
   const handleSetupComplete = () => {
     setShowSetup(false);
-    refetchUser(); // Refresh user data
+    refetch();
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
     setUser(null);
     setIsAuthenticated(false);
     setShowAuth(true);
     setShowSetup(false);
   };
 
-  // Show initial loading state during SSR or before client hydration
-  if (!isClient || !initialLoadComplete) {
-    console.log('Showing initial loading state - isClient:', isClient, 'initialLoadComplete:', initialLoadComplete);
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset your 1RM values? This will clear all your current rep maxes and you\'ll need to set them again.')) {
+      setShowSetup(true);
+    }
+  };
+
+  // Show loading state during hydration or when loading user data
+  if (!isClient || (isAuthenticated && loading) || (isAuthenticated && !user)) {
     return (
-      <div className="container center-align" style={{ marginTop: '100px' }}>
-        <div className="preloader-wrapper big active">
-          <div className="spinner-layer spinner-red-only">
-            <div className="circle-clipper left">
-              <div className="circle"></div>
-            </div>
-            <div className="gap-patch">
-              <div className="circle"></div>
-            </div>
-            <div className="circle-clipper right">
-              <div className="circle"></div>
-            </div>
-          </div>
+      <div className={`container center-align ${styles.loadingContainer}`}>
+        <div className={`preloader-wrapper big active ${styles.preloaderWrapper}`}>
+          <div className={`spinner-layer ${styles.spinnerLayer}`}></div>
         </div>
-        <p style={{ color: '#ffffff', marginTop: '20px' }}>Initializing application...</p>
+        <p className={styles.loadingText}>
+          {!isClient ? 'Loading...' : 'Loading user data...'}
+        </p>
       </div>
     );
   }
 
-  // Show loading state only when authenticated and loading
-  console.log('Render check - isAuthenticated:', isAuthenticated, 'userLoading:', userLoading, 'showAuth:', showAuth, 'user:', !!user);
-  
-  if (isAuthenticated && userLoading) {
-    console.log('Showing loading state');
+  // Render auth modal
+  if (!isAuthenticated) {
     return (
-      <div className="container center-align" style={{ marginTop: '100px' }}>
-        <div className="preloader-wrapper big active">
-          <div className="spinner-layer spinner-red-only">
-            <div className="circle-clipper left">
-              <div className="circle"></div>
-            </div>
-            <div className="gap-patch">
-              <div className="circle"></div>
-            </div>
-            <div className="circle-clipper right">
-              <div className="circle"></div>
-            </div>
-          </div>
-        </div>
-        <p style={{ color: '#ffffff', marginTop: '20px' }}>Loading user data...</p>
-      </div>
-    );
-  }
-
-  // Show auth modal
-  if (!isAuthenticated || showAuth) {
-    return (
-      <div className="container center-align" style={{ marginTop: '50px' }}>
-        <h1 className="text-primary">
-          <i className="material-icons left">fitness_center</i>
-          5/3/1 Tracker
+      <div className={`container center-align ${styles.authContainer}`}>
+        <h1 className={styles.authTitle}>
+          <i className={`material-icons ${styles.authTitleIcon}`}>fitness_center</i>5/3/1 Tracker
         </h1>
-        <p className="text-secondary">Please log in to continue</p>
-        <button 
-          className="btn btn-large"
-          onClick={() => setShowAuth(true)}
-          style={{ marginTop: '20px' }}
-        >
-          <i className="material-icons left">login</i>
-          Login / Register
-        </button>
-        
-        <AuthModal
-          isOpen={showAuth}
-          onClose={() => setShowAuth(false)}
-          onSuccess={handleAuthSuccess}
-        />
+        <p className={styles.authSubtitle}>Please log in to continue</p>
+        <AuthModal isOpen={true} onClose={() => {}} onSuccess={handleAuthSuccess} />
       </div>
     );
   }
 
-  // Show setup form
+  // Render setup form
   if (showSetup) {
     return (
-      <div style={{ 
-        minHeight: '100vh',
-        backgroundColor: '#121212',
-        padding: '20px 0'
-      }}>
-        <InitialSetupForm onComplete={handleSetupComplete} />
+      <div className={styles.appContainer}>
+        <div className={`container ${styles.container}`}>
+          {/* Header */}
+          <div className="row">
+            <div className="col s12">
+              <div className={`card ${styles.headerCard}`}>
+                <div className={`card-content ${styles.headerCardContent}`}>
+                  <div className={`row valign-wrapper ${styles.headerRow}`}>
+                    <div className="col s10">
+                      <h1 className={styles.headerTitle}>
+                        <i className={`material-icons left ${styles.headerTitleIcon}`}>
+                          fitness_center
+                        </i>
+                        5/3/1 Tracker
+                      </h1>
+                      <p className={styles.headerSubtitle}>
+                        Welcome back, {user?.username}! Let's set up your training.
+                      </p>
+                    </div>
+                    <div className="col s2 right-align">
+                      <button
+                        className={`btn-flat ${styles.logoutButton}`}
+                        onClick={handleLogout}
+                      >
+                        <i className={`material-icons ${styles.logoutIcon}`}>logout</i>Logout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Setup Form */}
+          <InitialSetupForm onComplete={handleSetupComplete} userData={user} />
+        </div>
       </div>
     );
   }
 
-  // Show main app
-  if (!user) {
-    return (
-      <div className="container center-align" style={{ marginTop: '50px' }}>
-        <p style={{ color: '#ffffff' }}>Loading user data...</p>
-      </div>
-    );
-  }
-
+  // Prepare user data for cycle display
   const cycleUserData = {
     squatOneRepMax: user.squatOneRepMax || 0,
+    squatTrainingMax: user.squatTrainingMax || 0,
     benchOneRepMax: user.benchOneRepMax || 0,
+    benchTrainingMax: user.benchTrainingMax || 0,
     deadliftOneRepMax: user.deadliftOneRepMax || 0,
+    deadliftTrainingMax: user.deadliftTrainingMax || 0,
     ohpOneRepMax: user.ohpOneRepMax || 0,
+    ohpTrainingMax: user.ohpTrainingMax || 0,
     availablePlates: JSON.parse(user.availablePlates || '[]'),
-    weightUnit: user.weightUnit as 'pounds' | 'kilograms'
+    weightUnit: user.weightUnit as 'pounds' | 'kilograms',
+  };
+
+  // Prepare user data for summary table
+  const summaryUserData = {
+    weightUnit: user.weightUnit,
+    squatOneRepMax: user.squatOneRepMax || 0,
+    squatTrainingMax: user.squatTrainingMax || 0,
+    benchOneRepMax: user.benchOneRepMax || 0,
+    benchTrainingMax: user.benchTrainingMax || 0,
+    deadliftOneRepMax: user.deadliftOneRepMax || 0,
+    deadliftTrainingMax: user.deadliftTrainingMax || 0,
+    ohpOneRepMax: user.ohpOneRepMax || 0,
+    ohpTrainingMax: user.ohpTrainingMax || 0,
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      backgroundColor: '#121212',
-      padding: '20px 0'
-    }}>
-      {/* Header */}
-      <div className="container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className={styles.appContainer}>
+      <div className={`container ${styles.container}`}>
+        {/* Header */}
         <div className="row">
           <div className="col s12">
-            <div className="card" style={{ 
-              backgroundColor: '#1a1a1a',
-              borderRadius: '12px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-            }}>
-              <div className="card-content" style={{ padding: '1.5rem' }}>
-                <div className="row valign-wrapper">
+            <div className={`card ${styles.headerCard}`}>
+              <div className={`card-content ${styles.headerCardContent}`}>
+                <div className={`row valign-wrapper ${styles.headerRow}`}>
                   <div className="col s10">
-                    <h1 style={{ 
-                      color: '#4CAF50',
-                      margin: 0,
-                      fontSize: '2rem',
-                      fontWeight: 'bold'
-                    }}>
-                      <i className="material-icons left" style={{ fontSize: '2rem' }}>fitness_center</i>
+                    <h1 className={styles.headerTitle}>
+                      <i className={`material-icons left ${styles.headerTitleIcon}`}>
+                        fitness_center
+                      </i>
                       5/3/1 Tracker
                     </h1>
-                    <p style={{ 
-                      color: '#cccccc',
-                      margin: '0.5rem 0 0 0',
-                      fontSize: '1.1rem'
-                    }}>
+                    <p className={styles.headerSubtitle}>
                       Welcome back, {user.username}!
                     </p>
                   </div>
                   <div className="col s2 right-align">
                     <button
-                      className="btn-flat"
-                      onClick={handleLogout}
-                      style={{ 
-                        color: '#ff6b6b',
-                        fontSize: '0.9rem'
-                      }}
+                      className={`btn-flat ${styles.resetButton}`}
+                      onClick={handleReset}
+                      style={{ marginRight: '1rem' }}
                     >
-                      <i className="material-icons left">logout</i>
-                      Logout
+                      <i className={`material-icons ${styles.resetIcon}`}>refresh</i>Reset
+                    </button>
+                    <button
+                      className={`btn-flat ${styles.logoutButton}`}
+                      onClick={handleLogout}
+                    >
+                      <i className={`material-icons ${styles.logoutIcon}`}>logout</i>Logout
                     </button>
                   </div>
                 </div>
@@ -344,7 +285,7 @@ export default function App() {
         </div>
 
         {/* Summary Table */}
-        <SummaryTable userData={user} />
+        <SummaryTable userData={summaryUserData} />
 
         {/* Cycle Display */}
         <CycleDisplay userData={cycleUserData} />

@@ -12,6 +12,18 @@ const LOGIN = gql`
         id
         email
         username
+        createdAt
+        updatedAt
+        weightUnit
+        availablePlates
+        squatOneRepMax
+        squatTrainingMax
+        benchOneRepMax
+        benchTrainingMax
+        deadliftOneRepMax
+        deadliftTrainingMax
+        ohpOneRepMax
+        ohpTrainingMax
       }
     }
   }
@@ -25,6 +37,18 @@ const REGISTER = gql`
         id
         email
         username
+        createdAt
+        updatedAt
+        weightUnit
+        availablePlates
+        squatOneRepMax
+        squatTrainingMax
+        benchOneRepMax
+        benchTrainingMax
+        deadliftOneRepMax
+        deadliftTrainingMax
+        ohpOneRepMax
+        ohpTrainingMax
       }
     }
   }
@@ -64,7 +88,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         });
         
         if (data?.login) {
-          localStorage.setItem('token', data.login.token);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', data.login.token);
+          }
           onSuccess(data.login.token, data.login.user);
           onClose();
         }
@@ -80,7 +106,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         });
         
         if (data?.register) {
-          localStorage.setItem('token', data.register.token);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', data.register.token);
+          }
           onSuccess(data.register.token, data.register.user);
           onClose();
         }
@@ -102,6 +130,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   return (
     <div 
       className="modal" 
+      tabIndex={0}
+      role="dialog"
+      aria-modal="true"
       style={{ 
         display: 'block',
         position: 'fixed',

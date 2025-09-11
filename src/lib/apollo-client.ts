@@ -11,10 +11,6 @@ const authLink = setContext((_, { headers }) => {
   // Get the authentication token from local storage if it exists
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   
-  // Log token status for debugging
-  if (typeof window !== 'undefined') {
-    console.log('Apollo auth link - token exists:', !!token);
-  }
   
   // Return the headers to the context so httpLink can read them
   return {
@@ -31,11 +27,11 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     graphQLErrors.forEach(({ message, locations, path }) => {
       console.log(`GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`);
       
-      // If authentication error, clear token and redirect to login
+      // If authentication error, clear token (let App component handle state)
       if (message.includes('Not authenticated') || message.includes('Unauthorized')) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
-          window.location.reload(); // Force reload to reset auth state
+          // Don't reload - let the App component handle the state change
         }
       }
     });
