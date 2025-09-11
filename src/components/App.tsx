@@ -49,10 +49,22 @@ export default function App() {
   const [showSetup, setShowSetup] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client-side flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Check for existing auth token
   useEffect(() => {
+    if (!isClient) return;
+    
+    console.log('App mounted - checking authentication state');
     const token = localStorage.getItem('token');
+    console.log('Token found:', !!token);
+    
     if (token) {
       // Basic token validation - check if it's a valid JWT format
       try {
@@ -62,7 +74,12 @@ export default function App() {
           const payload = JSON.parse(atob(parts[1]));
           const now = Math.floor(Date.now() / 1000);
           
+          console.log('Token payload:', payload);
+          console.log('Token expires at:', new Date(payload.exp * 1000));
+          console.log('Current time:', new Date(now * 1000));
+          
           if (payload.exp && payload.exp > now) {
+            console.log('Token is valid - setting authenticated');
             setIsAuthenticated(true);
           } else {
             console.log('Token expired - clearing auth state');
@@ -75,14 +92,17 @@ export default function App() {
           setShowAuth(true);
         }
       } catch (error) {
-        console.log('Token validation error - clearing auth state');
+        console.log('Token validation error - clearing auth state:', error);
         localStorage.removeItem('token');
         setShowAuth(true);
       }
     } else {
+      console.log('No token found - showing auth');
       setShowAuth(true);
     }
-  }, []);
+    
+    setInitialLoadComplete(true);
+  }, [isClient]);
 
   // Query user profile
   const { data: userData, loading: userLoading, refetch: refetchUser } = useQuery(GET_USER_PROFILE, {
@@ -90,15 +110,19 @@ export default function App() {
     errorPolicy: 'all',
     fetchPolicy: 'network-only', // Always fetch from network, not cache
     onCompleted: (data) => {
+      console.log('GraphQL query completed:', data);
       if (data?.me) {
+        console.log('User data received:', data.me);
         setUser(data.me);
         // Check if user has completed setup
         const hasSetup = data.me.squatOneRepMax && 
                         data.me.benchOneRepMax && 
                         data.me.deadliftOneRepMax && 
                         data.me.ohpOneRepMax;
+        console.log('User has setup:', hasSetup);
         setShowSetup(!hasSetup);
       } else {
+        console.log('No user data - clearing auth state');
         // If me is null, token is invalid
         setIsAuthenticated(false);
         setShowAuth(true);
@@ -116,7 +140,9 @@ export default function App() {
 
   // Add timeout mechanism to prevent infinite loading
   useEffect(() => {
+    console.log('Timeout effect - isAuthenticated:', isAuthenticated, 'userLoading:', userLoading);
     if (isAuthenticated && userLoading) {
+      console.log('Setting up timeout for query');
       const timeout = setTimeout(() => {
         console.log('Query timeout - clearing auth state');
         setIsAuthenticated(false);
@@ -124,7 +150,10 @@ export default function App() {
         localStorage.removeItem('token');
       }, 10000); // 10 second timeout
 
-      return () => clearTimeout(timeout);
+      return () => {
+        console.log('Clearing timeout');
+        clearTimeout(timeout);
+      };
     }
   }, [isAuthenticated, userLoading]);
 
@@ -154,8 +183,34 @@ export default function App() {
     setShowSetup(false);
   };
 
+  // Show initial loading state during SSR or before client hydration
+  if (!isClient || !initialLoadComplete) {
+    console.log('Showing initial loading state - isClient:', isClient, 'initialLoadComplete:', initialLoadComplete);
+    return (
+      <div className="container center-align" style={{ marginTop: '100px' }}>
+        <div className="preloader-wrapper big active">
+          <div className="spinner-layer spinner-red-only">
+            <div className="circle-clipper left">
+              <div className="circle"></div>
+            </div>
+            <div className="gap-patch">
+              <div className="circle"></div>
+            </div>
+            <div className="circle-clipper right">
+              <div className="circle"></div>
+            </div>
+          </div>
+        </div>
+        <p style={{ color: '#ffffff', marginTop: '20px' }}>Initializing application...</p>
+      </div>
+    );
+  }
+
   // Show loading state only when authenticated and loading
+  console.log('Render check - isAuthenticated:', isAuthenticated, 'userLoading:', userLoading, 'showAuth:', showAuth, 'user:', !!user);
+  
   if (isAuthenticated && userLoading) {
+    console.log('Showing loading state');
     return (
       <div className="container center-align" style={{ marginTop: '100px' }}>
         <div className="preloader-wrapper big active">

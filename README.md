@@ -6,7 +6,7 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 
 ### Core 5/3/1 Functionality
 - ✅ **Fixed Core Lifts**: Only 4 lifts - Overhead Press, Bench Press, Squat, and Deadlift
-- ✅ **Mandatory Setup Form**: Weight unit selection, rep max inputs, and available plates
+- ✅ **Mandatory Setup Form**: Weight unit selection, rep max inputs, and plate count inputs
 - ✅ **Real 1RM Calculation**: Uses Epley formula to calculate 1RM from rep maxes
 - ✅ **Training Max Management**: Automatically calculates 90% of 1RM for all lifts
 - ✅ **Complete Training Cycles**: 4-week cycles with warm-ups, main sets, and BBB sets
@@ -17,7 +17,7 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 - ✅ **Warm-up Sets**: 3 sets at 40-60% Training Max, increasing gradually
 - ✅ **Main Working Sets**: Correct 5/3/1 percentages per week
 - ✅ **Boring But Big (BBB)**: 5×10 @ 30% Training Max for all lifts
-- ✅ **Plate Optimization**: Respects user's available plates for all calculations
+- ✅ **Plate Optimization**: Respects user's available plate counts for all calculations
 - ✅ **All Lifts Simultaneously**: Shows cycles for all 4 lifts on the same view
 
 ### User Experience
@@ -33,6 +33,8 @@ A mobile-first Progressive Web App (PWA) for tracking the Wendler 5/3/1 strength
 - ✅ **TypeScript**: Full type safety throughout the application
 - ✅ **Prisma ORM**: Type-safe database operations with SQLite/PostgreSQL
 - ✅ **Materialize CSS**: Familiar CSS framework for consistent UI
+- ✅ **SSR Hydration**: Proper server-side rendering with client-side hydration
+- ✅ **Error Handling**: Comprehensive error handling with retry mechanisms
 
 ## Tech Stack
 

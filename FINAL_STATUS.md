@@ -10,7 +10,7 @@
 ### 2. Mandatory Initial Setup Form
 - ✅ **Weight unit selection**: Radio buttons for Pounds or Kilograms
 - ✅ **Rep max inputs**: Input fields for each lift (e.g., "Bench Press → X reps × X Pounds/Kilograms")
-- ✅ **Available plates selection**: Checkboxes for 100, 45, 35, 25, 10, 5, 2.5 plates
+- ✅ **Available plates selection**: Numeric inputs for plate counts (100, 45, 35, 25, 10, 5, 2.5)
 - ✅ **Mandatory Submit button**: No calculations display until form is submitted
 - ✅ **1RM calculation**: Uses Epley formula to calculate real 1RM from rep maxes
 
@@ -26,7 +26,7 @@
 - ✅ **Main working sets**: Correct 5/3/1 percentages per week with AMRAP on last set
 - ✅ **BBB sets**: 5×10 @ 30% Training Max for all lifts
 - ✅ **Plate calculations**: Shows exactly which plates are required for each set
-- ✅ **Respects available plates**: Only uses plates the user has available
+- ✅ **Respects available plate counts**: Only uses plates the user has available
 
 ### 5. UI/UX Requirements
 - ✅ **Clean tabular layout**: All lifts and cycles visible simultaneously
@@ -48,6 +48,9 @@
 - ✅ **React components**: Modular, reusable components
 - ✅ **TypeScript**: Full type safety throughout
 - ✅ **Materialize CSS**: Consistent styling framework
+- ✅ **SSR Hydration**: Fixed server-side rendering hydration issues
+- ✅ **Error Handling**: Comprehensive error handling with retry mechanisms
+- ✅ **Plate Count System**: Numeric inputs for specifying exact plate quantities
 
 ## 🚀 Application Features
 
